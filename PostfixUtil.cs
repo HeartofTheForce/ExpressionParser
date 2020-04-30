@@ -7,9 +7,9 @@ namespace ExpressionParser
     {
         public static int EvaluatePostfix(string input)
         {
-            var split = input.Split(' ');
+            string[] split = input.Split(' ');
 
-            Stack<int> values = new Stack<int>();
+            var values = new Stack<int>();
             for (int i = 0; i < split.Length; i++)
             {
                 if (int.TryParse(split[i], out int value))
@@ -28,13 +28,13 @@ namespace ExpressionParser
 
         static int Calculate(string key, Stack<int> values)
         {
-            if (BinaryOperationMap.TryGetValue(key, out var binaryOperation))
+            if (s_binaryOperationMap.TryGetValue(key, out var binaryOperation))
             {
                 int b = values.Pop();
                 int a = values.Pop();
                 return binaryOperation(a, b);
             }
-            else if (UnaryOperationMap.TryGetValue(key, out var unaryOperation))
+            else if (s_unaryOperationMap.TryGetValue(key, out var unaryOperation))
             {
                 int a = values.Pop();
                 return unaryOperation(a);
@@ -44,7 +44,7 @@ namespace ExpressionParser
         }
 
 
-        static Dictionary<string, Func<int, int, int>> BinaryOperationMap = new Dictionary<string, Func<int, int, int>>()
+        static readonly Dictionary<string, Func<int, int, int>> s_binaryOperationMap = new Dictionary<string, Func<int, int, int>>()
         {
             { "+", (a,b) => a + b},
             { "-", (a,b) => a - b},
@@ -53,7 +53,7 @@ namespace ExpressionParser
             { "^", (a,b) => a ^ b},
         };
 
-        static Dictionary<string, Func<int, int>> UnaryOperationMap = new Dictionary<string, Func<int, int>>()
+        static readonly Dictionary<string, Func<int, int>> s_unaryOperationMap = new Dictionary<string, Func<int, int>>()
         {
             { "u+", (a) => a},
             { "u-", (a) => -a},

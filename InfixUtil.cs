@@ -51,7 +51,7 @@ namespace ExpressionParser
                     else
                     {
                         current = ParseOperator(lastExpression, current);
-                        if (RightAssociativeOperatorSet.Contains(current))
+                        if (s_rightAssociativeOperatorSet.Contains(current))
                         {
                             while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
                             {
@@ -92,20 +92,20 @@ namespace ExpressionParser
 
         private static string ParseOperator(string previousExpression, string currentOperator)
         {
-            bool isUnary = previousExpression == null || previousExpression == "(" || BinaryOperatorSet.Contains(previousExpression) || UnaryOperatorSet.Contains(previousExpression);
+            bool isUnary = previousExpression == null || previousExpression == "(" || s_binaryOperatorSet.Contains(previousExpression) || s_unaryOperatorSet.Contains(previousExpression);
             if (isUnary)
             {
-                if (UnaryMap.TryGetValue(currentOperator, out string unaryOperator))
+                if (s_unaryMap.TryGetValue(currentOperator, out string unaryOperator))
                     currentOperator = unaryOperator;
 
-                if (UnaryOperatorSet.Contains(currentOperator))
+                if (s_unaryOperatorSet.Contains(currentOperator))
                     return currentOperator;
 
                 throw new Exception("Invalid Unary Operator");
             }
             else
             {
-                if (BinaryOperatorSet.Contains(currentOperator))
+                if (s_binaryOperatorSet.Contains(currentOperator))
                     return currentOperator;
 
                 throw new Exception("Invalid Binary Operator");
@@ -154,8 +154,8 @@ namespace ExpressionParser
 
         static int Precedence(string c)
         {
-            if (UnaryOperatorSet.Contains(c)) return int.MaxValue;
-            if (PrecedenceMap.TryGetValue(c, out int precedence))
+            if (s_unaryOperatorSet.Contains(c)) return int.MaxValue;
+            if (s_precedenceMap.TryGetValue(c, out int precedence))
             {
                 return precedence;
             }
@@ -163,7 +163,7 @@ namespace ExpressionParser
             throw new Exception("Invalid Operator");
         }
 
-        static Dictionary<string, int> PrecedenceMap = new Dictionary<string, int>()
+        static readonly Dictionary<string, int> s_precedenceMap = new Dictionary<string, int>()
         {
             { "(", 0 },
             { ")", 0 },
@@ -175,7 +175,7 @@ namespace ExpressionParser
             { "^", 4 },
         };
 
-        static HashSet<string> RightAssociativeOperatorSet = new HashSet<string>()
+        static readonly HashSet<string> s_rightAssociativeOperatorSet = new HashSet<string>()
         {
             "^",
             "|",
@@ -184,7 +184,7 @@ namespace ExpressionParser
             "~",
         };
 
-        static HashSet<string> BinaryOperatorSet = new HashSet<string>()
+        static readonly HashSet<string> s_binaryOperatorSet = new HashSet<string>()
         {
             "+",
             "-",
@@ -194,14 +194,14 @@ namespace ExpressionParser
             "|",
         };
 
-        static HashSet<string> UnaryOperatorSet = new HashSet<string>()
+        static readonly HashSet<string> s_unaryOperatorSet = new HashSet<string>()
         {
             "u+",
             "u-",
             "~",
         };
 
-        static Dictionary<string, string> UnaryMap = new Dictionary<string, string>()
+        static readonly Dictionary<string, string> s_unaryMap = new Dictionary<string, string>()
         {
             { "+", "u+" },
             { "-", "u-" },
