@@ -35,6 +35,9 @@ namespace ExpressionParser
                     }
                     else if (current == ")")
                     {
+                        if (depthStack.Count == 0)
+                            throw new Exception("( Expected");
+
                         while (depthStack.Peek().Count > 0)
                         {
                             expression.Add(depthStack.Peek().Pop().Output);
@@ -44,6 +47,10 @@ namespace ExpressionParser
                     else
                     {
                         var operatorMeta = ParseOperator(lastExpression, current);
+
+                        if (depthStack.Count == 0)
+                            throw new Exception("( Expected");
+
                         while (depthStack.Peek().Count > 0 && Evaluate(operatorMeta, depthStack.Peek().Peek()))
                         {
                             expression.Add(depthStack.Peek().Pop().Output);
@@ -54,6 +61,12 @@ namespace ExpressionParser
                     lastExpression = current;
                 }
             }
+
+            if (depthStack.Count > 1)
+                throw new Exception(") Expected");
+
+            if (depthStack.Count == 0)
+                throw new Exception("( Expected");
 
             while (depthStack.Peek().Count > 0)
             {
@@ -71,13 +84,13 @@ namespace ExpressionParser
                 {
                     switch (current.Associativity)
                     {
-                        case  Associativity.Left: return true;
-                        case  Associativity.Right: return false;
+                        case Associativity.Left: return true;
+                        case Associativity.Right: return false;
                     }
                 }
                 else
                 {
-                    throw new Exception("Operators with same Precedence must have same ");
+                    throw new Exception("Operators with same Precedence must have same Associativity");
                 }
             }
 
