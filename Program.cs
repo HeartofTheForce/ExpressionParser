@@ -21,11 +21,13 @@ namespace ExpressionParser
 
         public static (string, string)[] TestCases = new (string, string)[]
         {
+            ("(-a ^ b | c) / (d | ~e ^ +f)","a u- b ^ c | d e ~ f u+ ^ | /"),
             ("a * b + c","a b * c +"),
             ("a + b * c","a b c * +"),
             ("(a + b) * c","a b + c *"),
             ("-(a + b) * c","a b + u- c *"),
             ("(-a + b) * c","a u- b + c *"),
+            ("a++(~-b)","a b u- ~ u+ +"),
             ("a+(-b)","a b u- +"),
             ("a+-b","a b u- +"),
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
