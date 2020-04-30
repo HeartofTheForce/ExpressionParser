@@ -30,9 +30,14 @@ namespace ExpressionParser
             ("a+(-b)","a b u- +"),
             ("a+-b","a b u- +"),
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
+            ("a^(f+g*h)-i", "a f g h * + ^ i -"),
             ("a^b^c", "a b c ^ ^"),
             ("a^b|c", "a b ^ c |"),
             ("a|b^c", "a b c ^ |"),
+            // ("a^b&c", "a b c & ^"),
+            // ("a&b^c", "a b & c ^"),
+            // ("a+b*A^C-i", "a b A * C ^ + i -"),
+            // ("a+b*A^C-i", "a b A C ^ * + i -"),
         };
     }
 }

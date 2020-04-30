@@ -12,7 +12,8 @@ namespace ExpressionParser
 
             var rightStack = new Stack<Stack<string>>();
             rightStack.Push(new Stack<string>());
-            var leftStack = new Stack<string>();
+            var leftStack = new Stack<Stack<string>>();
+            leftStack.Push(new Stack<string>());
 
             string lastExpression = null;
             for (int i = 0; i < infix.Length; i++)
@@ -33,7 +34,7 @@ namespace ExpressionParser
                     if (current == "(")
                     {
                         rightStack.Push(new Stack<string>());
-                        leftStack.Push(current);
+                        leftStack.Push(new Stack<string>());
                     }
                     else if (current == ")")
                     {
@@ -42,9 +43,10 @@ namespace ExpressionParser
                             expression.Add(rightStack.Peek().Pop());
                         }
                         rightStack.Pop();
-                        while (leftStack.Peek() != "(")
+
+                        while (leftStack.Peek().Count > 0)
                         {
-                            expression.Add(leftStack.Pop());
+                            expression.Add(leftStack.Peek().Pop());
                         }
                         leftStack.Pop();
                     }
@@ -53,6 +55,11 @@ namespace ExpressionParser
                         current = ParseOperator(lastExpression, current);
                         if (s_rightAssociativeOperatorSet.Contains(current))
                         {
+                            while (leftStack.Peek().Count > 0 && Precedence(current) <= Precedence(leftStack.Peek().Peek()))
+                            {
+                                expression.Add(leftStack.Peek().Pop());
+                            }
+
                             while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
                             {
                                 expression.Add(rightStack.Peek().Pop());
@@ -61,16 +68,16 @@ namespace ExpressionParser
                         }
                         else
                         {
-                            while (rightStack.Peek().Count > 0)
+                            while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
                             {
                                 expression.Add(rightStack.Peek().Pop());
                             }
 
-                            while (leftStack.Count > 0 && Precedence(current) <= Precedence(leftStack.Peek()))
+                            while (leftStack.Peek().Count > 0 && Precedence(current) <= Precedence(leftStack.Peek().Peek()))
                             {
-                                expression.Add(leftStack.Pop());
+                                expression.Add(leftStack.Peek().Pop());
                             }
-                            leftStack.Push(current);
+                            leftStack.Peek().Push(current);
                         }
                     }
 
@@ -82,9 +89,9 @@ namespace ExpressionParser
             {
                 expression.Add(rightStack.Peek().Pop());
             }
-            while (leftStack.Count > 0)
+            while (leftStack.Peek().Count > 0)
             {
-                expression.Add(leftStack.Pop());
+                expression.Add(leftStack.Peek().Pop());
             }
 
             return string.Join(' ', expression);
@@ -173,6 +180,7 @@ namespace ExpressionParser
             { "/", 2 },
             { "|", 3 },
             { "^", 4 },
+            { "&", 4 },
         };
 
         static readonly HashSet<string> s_rightAssociativeOperatorSet = new HashSet<string>()
@@ -192,6 +200,7 @@ namespace ExpressionParser
             "/",
             "^",
             "|",
+            "&",
         };
 
         static readonly HashSet<string> s_unaryOperatorSet = new HashSet<string>()
