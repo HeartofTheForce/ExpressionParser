@@ -5,7 +5,6 @@ namespace ExpressionParser
     {
         static void Main(string[] args)
         {
-
             foreach (var testCase in TestCases)
             {
                 string infix = testCase.Item1;
