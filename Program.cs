@@ -37,7 +37,7 @@ namespace ExpressionParser
             //Unary Parentheses
             ("a + ~(b + c)", "a b c + ~ +"),
             //Unary Chained
-            ("a+~-b", "a b u- ~ +"),
+            ("a+-~b", "a b ~ u- +"),
             //Complex 1
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
             //Complex 2
