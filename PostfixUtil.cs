@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ExpressionParser
 {
@@ -19,10 +18,7 @@ namespace ExpressionParser
                 }
                 else
                 {
-                    int b = values.Pop();
-                    int a = values.Pop();
-
-                    int result = Calculate(split[i], a, b);
+                    int result = Calculate(split[i], values);
                     values.Push(result);
                 }
             }
@@ -30,24 +26,38 @@ namespace ExpressionParser
             return values.Peek();
         }
 
-        static int Calculate(string key, int a, int b)
+        static int Calculate(string key, Stack<int> values)
         {
-            if (OperationMap.TryGetValue(key, out var operation))
+            if (BinaryOperationMap.TryGetValue(key, out var binaryOperation))
             {
-                return operation(a, b);
+                int b = values.Pop();
+                int a = values.Pop();
+                return binaryOperation(a, b);
+            }
+            else if (UnaryOperationMap.TryGetValue(key, out var unaryOperation))
+            {
+                int a = values.Pop();
+                return unaryOperation(a);
             }
 
             throw new Exception("Invalid Operator");
         }
 
 
-        static Dictionary<string, Func<int, int, int>> OperationMap = new Dictionary<string, Func<int, int, int>>()
+        static Dictionary<string, Func<int, int, int>> BinaryOperationMap = new Dictionary<string, Func<int, int, int>>()
         {
             { "+", (a,b) => a + b},
             { "-", (a,b) => a - b},
             { "*", (a,b) => a * b},
             { "/", (a,b) => a / b},
             { "^", (a,b) => a ^ b},
+        };
+
+        static Dictionary<string, Func<int, int>> UnaryOperationMap = new Dictionary<string, Func<int, int>>()
+        {
+            { "u+", (a) => a},
+            { "u-", (a) => -a},
+            { "~", (a) => ~a},
         };
     }
 }

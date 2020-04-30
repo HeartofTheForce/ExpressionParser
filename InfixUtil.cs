@@ -8,56 +8,100 @@ namespace ExpressionParser
     {
         public static string Infix2Postfix(ReadOnlySpan<char> infix)
         {
-            var sb = new StringBuilder();
-            var operatorStack = new Stack<char>();
+            var expression = new List<string>();
 
+            var unaryStack = new Stack<Stack<string>>();
+            unaryStack.Push(new Stack<string>());
+            var binaryStack = new Stack<string>();
+
+            string lastExpression = null;
             for (int i = 0; i < infix.Length; i++)
             {
-                var operand = ReadUntilNonAlphaNumeric(infix.Slice(i));
+                string operand = ReadUntilNonAlphaNumeric(infix.Slice(i)).ToString();
                 if (operand.Length > 0)
                 {
-                    if (sb.Length > 0)
-                        sb.Append(' ');
-                    sb.Append(operand);
+                    expression.Add(operand);
+
+                    while (unaryStack.Peek().Count > 0)
+                    {
+                        expression.Add(unaryStack.Peek().Pop());
+                    }
                     i += operand.Length - 1;
+                    lastExpression = operand;
                     continue;
                 }
 
-                char current = infix[i];
-                if (!char.IsLetterOrDigit(current) && current != ' ')
+                string current = infix[i].ToString();
+                if (!int.TryParse(current, out _) && !string.IsNullOrWhiteSpace(current))
                 {
-                    if (current == '(')
+                    if (current == "(")
                     {
-                        operatorStack.Push(current);
+                        unaryStack.Push(new Stack<string>());
+                        binaryStack.Push(current);
                     }
-                    else if (current == ')')
+                    else if (current == ")")
                     {
-                        while (operatorStack.Peek() != '(')
+                        while (binaryStack.Peek() != "(")
                         {
-                            sb.Append(' ');
-                            sb.Append(operatorStack.Pop());
+                            expression.Add(binaryStack.Pop());
                         }
-                        operatorStack.Pop();
+                        binaryStack.Pop();
+
+                        unaryStack.Pop();
+                        while (unaryStack.Peek().Count > 0)
+                        {
+                            expression.Add(unaryStack.Peek().Pop());
+                        }
                     }
                     else
                     {
-                        while (operatorStack.Count > 0 && Precedence(current) <= Precedence(operatorStack.Peek()))
+                        current = ParseOperator(lastExpression, current);
+                        if (UnaryOperatorSet.Contains(current))
                         {
-                            sb.Append(' ');
-                            sb.Append(operatorStack.Pop());
+                            unaryStack.Peek().Push(current);
                         }
-                        operatorStack.Push(current);
+                        else
+                        {
+                            while (binaryStack.Count > 0 && Precedence(current) <= Precedence(binaryStack.Peek()))
+                            {
+                                expression.Add(binaryStack.Pop());
+                            }
+                            binaryStack.Push(current);
+                        }
                     }
+
+                    lastExpression = current;
                 }
             }
 
-            while (operatorStack.Count > 0)
+            while (binaryStack.Count > 0)
             {
-                sb.Append(' ');
-                sb.Append(operatorStack.Pop());
+                expression.Add(binaryStack.Pop());
             }
 
-            return sb.ToString();
+            return string.Join(' ', expression);
+        }
+
+        private static string ParseOperator(string previousExpression, string currentOperator)
+        {
+            bool isUnary = previousExpression == null || previousExpression == "(" || BinaryOperatorSet.Contains(previousExpression) || UnaryOperatorSet.Contains(previousExpression);
+            if (isUnary)
+            {
+                if (UnaryMap.TryGetValue(currentOperator, out string unaryOperator))
+                    currentOperator = unaryOperator;
+
+                if (UnaryOperatorSet.Contains(currentOperator))
+                    return currentOperator;
+
+                throw new Exception("Invalid Unary Operator");
+            }
+            else
+            {
+                if (BinaryOperatorSet.Contains(currentOperator))
+                    return currentOperator;
+
+                throw new Exception("Invalid Binary Operator");
+            }
         }
 
         public static string Infix2Prefix(string infix)
@@ -91,15 +135,16 @@ namespace ExpressionParser
                 char current = input[i];
 
                 if (!char.IsLetterOrDigit(current))
+                {
                     break;
-
+                }
                 i++;
             }
 
             return input.Slice(0, i);
         }
 
-        static int Precedence(char c)
+        static int Precedence(string c)
         {
             if (PrecedenceMap.TryGetValue(c, out int precedence))
             {
@@ -109,15 +154,37 @@ namespace ExpressionParser
             throw new Exception("Invalid Operator");
         }
 
-        static Dictionary<char, int> PrecedenceMap = new Dictionary<char, int>()
+        static Dictionary<string, int> PrecedenceMap = new Dictionary<string, int>()
         {
-            { '(', 0 },
-            { ')', 0 },
-            { '+', 1 },
-            { '-', 1 },
-            { '*', 2 },
-            { '/', 2 },
-            { '^', 3 },
+            { "(", 0 },
+            { ")", 0 },
+            { "+", 1 },
+            { "-", 1 },
+            { "*", 2 },
+            { "/", 2 },
+            { "^", 3 },
+        };
+
+        static HashSet<string> BinaryOperatorSet = new HashSet<string>()
+        {
+            "+",
+            "-",
+            "*",
+            "/",
+            "^",
+        };
+
+        static HashSet<string> UnaryOperatorSet = new HashSet<string>()
+        {
+            "u+",
+            "u-",
+            "~",
+        };
+
+        static Dictionary<string, string> UnaryMap = new Dictionary<string, string>()
+        {
+            { "+", "u+" },
+            { "-", "u-" },
         };
     }
 }
