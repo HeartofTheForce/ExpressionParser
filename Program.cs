@@ -5,16 +5,26 @@ namespace ExpressionParser
     {
         static void Main(string[] args)
         {
-            string infix = "-4 -(+(--(5)))";
-            // string infix = "a+b*(~c^d-e)^-(f+g*h)-i";
-            string postfix = InfixUtil.Infix2Postfix(infix);
-            // string prefix = InfixUtil.Infix2Prefix(infix);
-            // Console.WriteLine($"Postfix: {postfix}");
-            // Console.WriteLine($"Prefix : {prefix}");
-            // Expected Postfix abcd^e-fgh*+^*+i-
 
-            Console.WriteLine(postfix);
-            Console.WriteLine(PostfixUtil.EvaluatePostfix(postfix));
+            foreach (var testCase in TestCases)
+            {
+                string infix = testCase.Item1;
+                string postfix = InfixUtil.Infix2Postfix(infix);
+                if (postfix != testCase.Item2)
+                {
+                    Console.WriteLine($"Failed: {infix}");
+                    Console.WriteLine($"Expected: {testCase.Item2}");
+                    Console.WriteLine($"Actual: {postfix}");
+                }
+            }
         }
+
+        public static (string, string)[] TestCases = new (string, string)[]
+        {
+            ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
+            ("1^2^3", "1 2 3 ^ ^"),
+            ("1^2|3", "1 2 ^ 3 |"),
+            ("1|2^3", "1 2 3 ^ |"),
+        };
     }
 }
