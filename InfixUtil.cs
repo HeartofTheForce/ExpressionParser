@@ -35,8 +35,8 @@ namespace ExpressionParser
                     }
                     else if (current == ")")
                     {
-                        if (depthStack.Count == 0)
-                            throw new Exception("( Expected");
+                        if (depthStack.Count == 1)
+                            throw new Exception($"( Expected: {i}");
 
                         while (depthStack.Peek().Count > 0)
                         {
@@ -49,7 +49,7 @@ namespace ExpressionParser
                         var operatorMeta = ParseOperator(lastExpression, current);
 
                         if (depthStack.Count == 0)
-                            throw new Exception("( Expected");
+                            throw new Exception($"( Expected: {i}");
 
                         while (depthStack.Peek().Count > 0 && Evaluate(operatorMeta, depthStack.Peek().Peek()))
                         {
@@ -63,10 +63,10 @@ namespace ExpressionParser
             }
 
             if (depthStack.Count > 1)
-                throw new Exception(") Expected");
+                throw new Exception($") Expected: {infix.Length - 1}");
 
             if (depthStack.Count == 0)
-                throw new Exception("( Expected");
+                throw new Exception($"( Expected: {infix.Length - 1}");
 
             while (depthStack.Peek().Count > 0)
             {
