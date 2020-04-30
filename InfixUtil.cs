@@ -10,9 +10,9 @@ namespace ExpressionParser
         {
             var expression = new List<string>();
 
-            var unaryStack = new Stack<Stack<string>>();
-            unaryStack.Push(new Stack<string>());
-            var binaryStack = new Stack<string>();
+            var rightStack = new Stack<Stack<string>>();
+            rightStack.Push(new Stack<string>());
+            var leftStack = new Stack<string>();
 
             string lastExpression = null;
             for (int i = 0; i < infix.Length; i++)
@@ -22,10 +22,6 @@ namespace ExpressionParser
                 {
                     expression.Add(operand);
 
-                    while (unaryStack.Peek().Count > 0)
-                    {
-                        expression.Add(unaryStack.Peek().Pop());
-                    }
                     i += operand.Length - 1;
                     lastExpression = operand;
                     continue;
@@ -36,37 +32,45 @@ namespace ExpressionParser
                 {
                     if (current == "(")
                     {
-                        unaryStack.Push(new Stack<string>());
-                        binaryStack.Push(current);
+                        rightStack.Push(new Stack<string>());
+                        leftStack.Push(current);
                     }
                     else if (current == ")")
                     {
-                        while (binaryStack.Peek() != "(")
+                        while (rightStack.Peek().Count > 0)
                         {
-                            expression.Add(binaryStack.Pop());
+                            expression.Add(rightStack.Peek().Pop());
                         }
-                        binaryStack.Pop();
-
-                        unaryStack.Pop();
-                        while (unaryStack.Peek().Count > 0)
+                        rightStack.Pop();
+                        while (leftStack.Peek() != "(")
                         {
-                            expression.Add(unaryStack.Peek().Pop());
+                            expression.Add(leftStack.Pop());
                         }
+                        leftStack.Pop();
                     }
                     else
                     {
                         current = ParseOperator(lastExpression, current);
-                        if (UnaryOperatorSet.Contains(current))
+                        if (RightAssociativeOperatorSet.Contains(current))
                         {
-                            unaryStack.Peek().Push(current);
+                            while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
+                            {
+                                expression.Add(rightStack.Peek().Pop());
+                            }
+                            rightStack.Peek().Push(current);
                         }
                         else
                         {
-                            while (binaryStack.Count > 0 && Precedence(current) <= Precedence(binaryStack.Peek()))
+                            while (rightStack.Peek().Count > 0)
                             {
-                                expression.Add(binaryStack.Pop());
+                                expression.Add(rightStack.Peek().Pop());
                             }
-                            binaryStack.Push(current);
+
+                            while (leftStack.Count > 0 && Precedence(current) <= Precedence(leftStack.Peek()))
+                            {
+                                expression.Add(leftStack.Pop());
+                            }
+                            leftStack.Push(current);
                         }
                     }
 
@@ -74,9 +78,13 @@ namespace ExpressionParser
                 }
             }
 
-            while (binaryStack.Count > 0)
+            while (rightStack.Peek().Count > 0)
             {
-                expression.Add(binaryStack.Pop());
+                expression.Add(rightStack.Peek().Pop());
+            }
+            while (leftStack.Count > 0)
+            {
+                expression.Add(leftStack.Pop());
             }
 
             return string.Join(' ', expression);
@@ -146,6 +154,7 @@ namespace ExpressionParser
 
         static int Precedence(string c)
         {
+            if (UnaryOperatorSet.Contains(c)) return int.MaxValue;
             if (PrecedenceMap.TryGetValue(c, out int precedence))
             {
                 return precedence;
@@ -162,7 +171,17 @@ namespace ExpressionParser
             { "-", 1 },
             { "*", 2 },
             { "/", 2 },
-            { "^", 3 },
+            { "|", 3 },
+            { "^", 4 },
+        };
+
+        static HashSet<string> RightAssociativeOperatorSet = new HashSet<string>()
+        {
+            "^",
+            "|",
+            "u+",
+            "u-",
+            "~",
         };
 
         static HashSet<string> BinaryOperatorSet = new HashSet<string>()
@@ -172,6 +191,7 @@ namespace ExpressionParser
             "*",
             "/",
             "^",
+            "|",
         };
 
         static HashSet<string> UnaryOperatorSet = new HashSet<string>()

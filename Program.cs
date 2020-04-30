@@ -14,17 +14,24 @@ namespace ExpressionParser
                 {
                     Console.WriteLine($"Failed: {infix}");
                     Console.WriteLine($"Expected: {testCase.Item2}");
-                    Console.WriteLine($"Actual: {postfix}");
+                    Console.WriteLine($"Actual  : {postfix}");
                 }
             }
         }
 
         public static (string, string)[] TestCases = new (string, string)[]
         {
+            ("a * b + c","a b * c +"),
+            ("a + b * c","a b c * +"),
+            ("(a + b) * c","a b + c *"),
+            ("-(a + b) * c","a b + u- c *"),
+            ("(-a + b) * c","a u- b + c *"),
+            ("a+(-b)","a b u- +"),
+            ("a+-b","a b u- +"),
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
-            ("1^2^3", "1 2 3 ^ ^"),
-            ("1^2|3", "1 2 ^ 3 |"),
-            ("1|2^3", "1 2 3 ^ |"),
+            ("a^b^c", "a b c ^ ^"),
+            ("a^b|c", "a b ^ c |"),
+            ("a|b^c", "a b c ^ |"),
         };
     }
 }
