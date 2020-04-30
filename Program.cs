@@ -20,22 +20,28 @@ namespace ExpressionParser
 
         public static (string, string)[] TestCases = new (string, string)[]
         {
-            ("(-a ^ b | c) / (d | ~e ^ +f)","a u- b ^ c | d e ~ f u+ ^ | /"),
-            ("a * b + c","a b * c +"),
-            ("a + b * c","a b c * +"),
-            ("(a + b) * c","a b + c *"),
-            ("-(a + b) * c","a b + u- c *"),
-            ("(-a + b) * c","a u- b + c *"),
-            ("a++(~-b)","a b u- ~ u+ +"),
-            ("a+(-b)","a b u- +"),
-            ("a+-b","a b u- +"),
+            //Parentheses
+            ("(a + b) * c", "a b + c *"),
+            //Left Precedence
+            ("a + b * c", "a b c * +"),
+            //Left Associative
+            ("a + b - c", "a b + c -"),
+            //Right Associative
+            ("a ^ b & c", "a b c & ^"),
+            //Right Precedence
+            ("a | b ^ c", "a b c ^ |"),
+            //Associative Precedence
+            ("a + b - c ^ d & e", "a b + c d e & ^ -"),
+            //Unary
+            ("-a + ~b", "a u- b ~ +"),
+            //Unary Parentheses
+            ("a + ~(b + c)", "a b c + ~ +"),
+            //Unary Chained
+            ("a+~-b", "a b u- ~ +"),
+            //Complex 1
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
-            ("a^(f+g*h)-i", "a f g h * + ^ i -"),
-            ("a^b^c", "a b c ^ ^"),
-            ("a^b|c", "a b ^ c |"),
-            ("a|b^c", "a b c ^ |"),
-            ("a&b^c", "a b c ^ &"),
-            ("a^b&c", "a b c & ^"),
+            //Complex 2
+            ("(-a ^ b | c) / (d | ~e ^ +f)","a u- b ^ c | d e ~ f u+ ^ | /"),
         };
     }
 }
