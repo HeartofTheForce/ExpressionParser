@@ -27,7 +27,7 @@ namespace ExpressionParser
                 }
 
                 string current = infix[i].ToString();
-                if (!int.TryParse(current, out _) && !string.IsNullOrWhiteSpace(current))
+                if (!string.IsNullOrWhiteSpace(current))
                 {
                     if (current == "(")
                     {

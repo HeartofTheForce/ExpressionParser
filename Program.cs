@@ -34,8 +34,10 @@ namespace ExpressionParser
             ("a + b - c ^ d & e", "a b + c d e & ^ -"),
             //Unary
             ("-a + ~b", "a u- b ~ +"),
-            //Unary Parentheses
+            //Unary Outside Parentheses
             ("a + ~(b + c)", "a b c + ~ +"),
+             //Unary Inside Parentheses
+            ("(-b)", "b u-"),
             //Unary Chained
             ("a+-~b", "a b ~ u- +"),
             //Complex 1
