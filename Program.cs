@@ -34,10 +34,8 @@ namespace ExpressionParser
             ("a^b^c", "a b c ^ ^"),
             ("a^b|c", "a b ^ c |"),
             ("a|b^c", "a b c ^ |"),
-            // ("a^b&c", "a b c & ^"),
-            // ("a&b^c", "a b & c ^"),
-            // ("a+b*A^C-i", "a b A * C ^ + i -"),
-            // ("a+b*A^C-i", "a b A C ^ * + i -"),
+            ("a&b^c", "a b c ^ &"),
+            ("a^b&c", "a b c & ^"),
         };
     }
 }

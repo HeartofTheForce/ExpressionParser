@@ -10,10 +10,8 @@ namespace ExpressionParser
         {
             var expression = new List<string>();
 
-            var rightStack = new Stack<Stack<string>>();
-            rightStack.Push(new Stack<string>());
-            var leftStack = new Stack<Stack<string>>();
-            leftStack.Push(new Stack<string>());
+            var depthStack = new Stack<Stack<OperatorMeta>>();
+            depthStack.Push(new Stack<OperatorMeta>());
 
             string lastExpression = null;
             for (int i = 0; i < infix.Length; i++)
@@ -33,87 +31,77 @@ namespace ExpressionParser
                 {
                     if (current == "(")
                     {
-                        rightStack.Push(new Stack<string>());
-                        leftStack.Push(new Stack<string>());
+                        depthStack.Push(new Stack<OperatorMeta>());
                     }
                     else if (current == ")")
                     {
-                        while (rightStack.Peek().Count > 0)
+                        while (depthStack.Peek().Count > 0)
                         {
-                            expression.Add(rightStack.Peek().Pop());
+                            expression.Add(depthStack.Peek().Pop().Output);
                         }
-                        rightStack.Pop();
-
-                        while (leftStack.Peek().Count > 0)
-                        {
-                            expression.Add(leftStack.Peek().Pop());
-                        }
-                        leftStack.Pop();
+                        depthStack.Pop();
                     }
                     else
                     {
-                        current = ParseOperator(lastExpression, current);
-                        if (s_rightAssociativeOperatorSet.Contains(current))
+                        var operatorMeta = ParseOperator(lastExpression, current);
+                        while (depthStack.Peek().Count > 0 && Evaluate(operatorMeta, depthStack.Peek().Peek()))
                         {
-                            while (leftStack.Peek().Count > 0 && Precedence(current) <= Precedence(leftStack.Peek().Peek()))
-                            {
-                                expression.Add(leftStack.Peek().Pop());
-                            }
-
-                            while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
-                            {
-                                expression.Add(rightStack.Peek().Pop());
-                            }
-                            rightStack.Peek().Push(current);
+                            expression.Add(depthStack.Peek().Pop().Output);
                         }
-                        else
-                        {
-                            while (rightStack.Peek().Count > 0 && Precedence(current) < Precedence(rightStack.Peek().Peek()))
-                            {
-                                expression.Add(rightStack.Peek().Pop());
-                            }
-
-                            while (leftStack.Peek().Count > 0 && Precedence(current) <= Precedence(leftStack.Peek().Peek()))
-                            {
-                                expression.Add(leftStack.Peek().Pop());
-                            }
-                            leftStack.Peek().Push(current);
-                        }
+                        depthStack.Peek().Push(operatorMeta);
                     }
 
                     lastExpression = current;
                 }
             }
 
-            while (rightStack.Peek().Count > 0)
+            while (depthStack.Peek().Count > 0)
             {
-                expression.Add(rightStack.Peek().Pop());
-            }
-            while (leftStack.Peek().Count > 0)
-            {
-                expression.Add(leftStack.Peek().Pop());
+                expression.Add(depthStack.Peek().Pop().Output);
             }
 
             return string.Join(' ', expression);
         }
 
-        private static string ParseOperator(string previousExpression, string currentOperator)
+        private static bool Evaluate(OperatorMeta current, OperatorMeta previous)
         {
-            bool isUnary = previousExpression == null || previousExpression == "(" || s_binaryOperatorSet.Contains(previousExpression) || s_unaryOperatorSet.Contains(previousExpression);
+            if (current.Precedence == previous.Precedence)
+            {
+                if (current.Associativity == previous.Associativity)
+                {
+                    switch (current.Associativity)
+                    {
+                        case  Associativity.Left: return true;
+                        case  Associativity.Right: return false;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Operators with same Precedence must have same ");
+                }
+            }
+
+            return current.Precedence < previous.Precedence;
+        }
+
+        private static OperatorMeta ParseOperator(string previousExpression, string currentOperator)
+        {
+            bool isUnary = previousExpression == null || previousExpression == "(" || s_binaryOperatorMap.ContainsKey(previousExpression) || s_unaryOperatorMap.ContainsKey(previousExpression);
             if (isUnary)
             {
-                if (s_unaryMap.TryGetValue(currentOperator, out string unaryOperator))
-                    currentOperator = unaryOperator;
-
-                if (s_unaryOperatorSet.Contains(currentOperator))
-                    return currentOperator;
+                if (s_unaryOperatorMap.TryGetValue(currentOperator, out var meta))
+                {
+                    return meta;
+                }
 
                 throw new Exception("Invalid Unary Operator");
             }
             else
             {
-                if (s_binaryOperatorSet.Contains(currentOperator))
-                    return currentOperator;
+                if (s_binaryOperatorMap.TryGetValue(currentOperator, out var meta))
+                {
+                    return meta;
+                }
 
                 throw new Exception("Invalid Binary Operator");
             }
@@ -159,61 +147,35 @@ namespace ExpressionParser
             return input.Slice(0, i);
         }
 
-        static int Precedence(string c)
+        public struct OperatorMeta
         {
-            if (s_unaryOperatorSet.Contains(c)) return int.MaxValue;
-            if (s_precedenceMap.TryGetValue(c, out int precedence))
-            {
-                return precedence;
-            }
-
-            throw new Exception("Invalid Operator");
+            public int Precedence { get; set; }
+            public Associativity Associativity { get; set; }
+            public string Output { get; set; }
         }
 
-        static readonly Dictionary<string, int> s_precedenceMap = new Dictionary<string, int>()
+        public enum Associativity
         {
-            { "(", 0 },
-            { ")", 0 },
-            { "+", 1 },
-            { "-", 1 },
-            { "*", 2 },
-            { "/", 2 },
-            { "|", 3 },
-            { "^", 4 },
-            { "&", 4 },
+            Left,
+            Right
+        }
+
+        static readonly Dictionary<string, OperatorMeta> s_binaryOperatorMap = new Dictionary<string, OperatorMeta>()
+        {
+            { "+", new OperatorMeta(){ Precedence = 1, Associativity = Associativity.Left, Output = "+" }},
+            { "-", new OperatorMeta(){ Precedence = 1, Associativity = Associativity.Left, Output = "-" }},
+            { "*", new OperatorMeta(){ Precedence = 2, Associativity = Associativity.Left, Output = "*" }},
+            { "/", new OperatorMeta(){ Precedence = 2, Associativity = Associativity.Left, Output = "/" }},
+            { "|", new OperatorMeta(){ Precedence = 3, Associativity = Associativity.Right, Output = "|" }},
+            { "^", new OperatorMeta(){ Precedence = 4, Associativity = Associativity.Right, Output = "^" }},
+            { "&", new OperatorMeta(){ Precedence = 4, Associativity = Associativity.Right, Output = "&" }},
         };
 
-        static readonly HashSet<string> s_rightAssociativeOperatorSet = new HashSet<string>()
+        static readonly Dictionary<string, OperatorMeta> s_unaryOperatorMap = new Dictionary<string, OperatorMeta>()
         {
-            "^",
-            "|",
-            "u+",
-            "u-",
-            "~",
-        };
-
-        static readonly HashSet<string> s_binaryOperatorSet = new HashSet<string>()
-        {
-            "+",
-            "-",
-            "*",
-            "/",
-            "^",
-            "|",
-            "&",
-        };
-
-        static readonly HashSet<string> s_unaryOperatorSet = new HashSet<string>()
-        {
-            "u+",
-            "u-",
-            "~",
-        };
-
-        static readonly Dictionary<string, string> s_unaryMap = new Dictionary<string, string>()
-        {
-            { "+", "u+" },
-            { "-", "u-" },
+            { "+", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "u+"}},
+            { "-", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "u-"}},
+            { "~", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "~"}},
         };
     }
 }
