@@ -86,10 +86,8 @@ namespace ExpressionParser.Parser
                 postfix.Add(stackOperatorInfo.Output);
             }
 
-            if (parameterCount != 1)
-            {
+            if (parameterCount > 1)
                 throw new Exception($"Too many operands");
-            }
 
             return string.Join(' ', postfix);
         }
