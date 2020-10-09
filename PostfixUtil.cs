@@ -1,63 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using static ExpressionParser.ExpressionRules;
 
 namespace ExpressionParser
 {
     public static class PostfixUtil
     {
-        public static int EvaluatePostfix(string input)
+        static readonly int[] s_buffer = new int[5];
+
+        public static int EvaluatePostfix(string input, Func<string, int> parseValue)
         {
             string[] split = input.Split(' ');
 
             var values = new Stack<int>();
             for (int i = 0; i < split.Length; i++)
             {
-                if (int.TryParse(split[i], out int value))
+                var operatorInfo = BinaryOperatorMap.FirstOrDefault(x => x.Output == split[i]) ?? FunctionOperatorMap.FirstOrDefault(x => x.Output == split[i]);
+
+                int value;
+                if (operatorInfo != null)
                 {
-                    values.Push(value);
+                    if (operatorInfo.ParameterCount > values.Count)
+                        throw new Exception($"Not enough arguments for {operatorInfo.Output}");
+
+                    for (int j = operatorInfo.ParameterCount - 1; j >= 0; j--)
+                    {
+                        s_buffer[j] = values.Pop();
+                    }
+
+                    value = operatorInfo.Execute(s_buffer);
                 }
                 else
-                {
-                    int result = Calculate(split[i], values);
-                    values.Push(result);
-                }
+                    value = parseValue(split[i]);
+
+                values.Push(value);
             }
+
+            if (values.Count != 1)
+                throw new Exception($"{values.Count} Remaining values");
 
             return values.Peek();
         }
-
-        static int Calculate(string key, Stack<int> values)
-        {
-            if (s_binaryOperationMap.TryGetValue(key, out var binaryOperation))
-            {
-                int b = values.Pop();
-                int a = values.Pop();
-                return binaryOperation(a, b);
-            }
-            else if (s_unaryOperationMap.TryGetValue(key, out var unaryOperation))
-            {
-                int a = values.Pop();
-                return unaryOperation(a);
-            }
-
-            throw new Exception("Invalid Operator");
-        }
-
-
-        static readonly Dictionary<string, Func<int, int, int>> s_binaryOperationMap = new Dictionary<string, Func<int, int, int>>()
-        {
-            { "+", (a,b) => a + b},
-            { "-", (a,b) => a - b},
-            { "*", (a,b) => a * b},
-            { "/", (a,b) => a / b},
-            { "^", (a,b) => a ^ b},
-        };
-
-        static readonly Dictionary<string, Func<int, int>> s_unaryOperationMap = new Dictionary<string, Func<int, int>>()
-        {
-            { "u+", (a) => a},
-            { "u-", (a) => -a},
-            { "~", (a) => ~a},
-        };
     }
 }

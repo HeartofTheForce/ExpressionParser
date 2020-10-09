@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using static ExpressionParser.ExpressionRules;
 
 namespace ExpressionParser
 {
@@ -8,58 +9,63 @@ namespace ExpressionParser
     {
         public static string Infix2Postfix(ReadOnlySpan<char> infix)
         {
-            var expression = new List<string>();
+            var postfix = new List<string>();
 
-            var depthStack = new Stack<Stack<OperatorMeta>>();
-            depthStack.Push(new Stack<OperatorMeta>());
+            var depthStack = new Stack<Stack<IOperatorInfo>>();
+            depthStack.Push(new Stack<IOperatorInfo>());
 
-            string lastExpression = null;
+            string previousExpression = null;
             for (int i = 0; i < infix.Length; i++)
             {
-                string operand = ReadUntilNonAlphaNumeric(infix.Slice(i)).ToString();
-                if (operand.Length > 0)
+                string current = infix.Slice(i, 1).ToString();
+                if (string.IsNullOrWhiteSpace(current))
                 {
-                    expression.Add(operand);
-
-                    i += operand.Length - 1;
-                    lastExpression = operand;
-                    continue;
+                    current = null;
                 }
-
-                string current = infix[i].ToString();
-                if (!string.IsNullOrWhiteSpace(current))
+                else if (current == "(")
                 {
-                    if (current == "(")
-                    {
-                        depthStack.Push(new Stack<OperatorMeta>());
-                    }
-                    else if (current == ")")
-                    {
-                        if (depthStack.Count == 1)
-                            throw new Exception($"( Expected: {i}");
+                    depthStack.Push(new Stack<IOperatorInfo>());
+                }
+                else if (current == ")")
+                {
+                    if (depthStack.Count == 1)
+                        throw new Exception($"( Expected: {i}");
 
-                        while (depthStack.Peek().Count > 0)
-                        {
-                            expression.Add(depthStack.Peek().Pop().Output);
-                        }
-                        depthStack.Pop();
-                    }
-                    else
+                    while (depthStack.Peek().Count > 0)
                     {
-                        var operatorMeta = ParseOperator(lastExpression, current);
+                        postfix.Add(depthStack.Peek().Pop().Output);
+                    }
+                    depthStack.Pop();
+                }
+                else
+                {
+                    current = TryParseExpression(infix[i..]).ToString();
+                    var operatorInfo = TryParseOperator(previousExpression, current);
 
+                    if (operatorInfo != null)
+                    {
                         if (depthStack.Count == 0)
                             throw new Exception($"( Expected: {i}");
 
-                        while (depthStack.Peek().Count > 0 && Evaluate(operatorMeta, depthStack.Peek().Peek()))
+                        while (depthStack.Peek().Count > 0 && Evaluate(operatorInfo, depthStack.Peek().Peek()))
                         {
-                            expression.Add(depthStack.Peek().Pop().Output);
+                            postfix.Add(depthStack.Peek().Pop().Output);
                         }
-                        depthStack.Peek().Push(operatorMeta);
+                        depthStack.Peek().Push(operatorInfo);
+                    }
+                    else
+                    {
+                        if (previousExpression == ")")
+                            throw new Exception($"Operator Expected: {i}");
+
+                        postfix.Add(current);
                     }
 
-                    lastExpression = current;
+                    i += current.Length - 1;
                 }
+
+                if (current != null)
+                    previousExpression = current;
             }
 
             if (depthStack.Count > 1)
@@ -70,13 +76,13 @@ namespace ExpressionParser
 
             while (depthStack.Peek().Count > 0)
             {
-                expression.Add(depthStack.Peek().Pop().Output);
+                postfix.Add(depthStack.Peek().Pop().Output);
             }
 
-            return string.Join(' ', expression);
+            return string.Join(' ', postfix);
         }
 
-        private static bool Evaluate(OperatorMeta current, OperatorMeta previous)
+        private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
         {
             if (current.Precedence == previous.Precedence)
             {
@@ -97,27 +103,53 @@ namespace ExpressionParser
             return current.Precedence < previous.Precedence;
         }
 
-        private static OperatorMeta ParseOperator(string previousExpression, string currentOperator)
+        private static ReadOnlySpan<char> TryParseExpression(ReadOnlySpan<char> input)
         {
-            bool isUnary = previousExpression == null || previousExpression == "(" || s_binaryOperatorMap.ContainsKey(previousExpression) || s_unaryOperatorMap.ContainsKey(previousExpression);
-            if (isUnary)
-            {
-                if (s_unaryOperatorMap.TryGetValue(currentOperator, out var meta))
-                {
-                    return meta;
-                }
+            bool isAlphanumeric = char.IsLetterOrDigit(input[0]);
 
-                throw new Exception("Invalid Unary Operator");
+            int i;
+            for (i = 0; i < input.Length; i++)
+            {
+                char current = input[i];
+
+                if (isAlphanumeric && !char.IsLetterOrDigit(current))
+                    break;
+                if (!isAlphanumeric && char.IsLetterOrDigit(current))
+                    break;
+                if (char.IsWhiteSpace(current) || current == '(' || current == ')')
+                    break;
+            }
+
+            return input.Slice(0, i);
+        }
+
+        private static IOperatorInfo TryParseOperator(string previousExpression, string currentOperator)
+        {
+            bool isFunction =
+                previousExpression == null ||
+                previousExpression == "(" ||
+                BinaryOperatorMap.Any(x => x.Input == previousExpression) ||
+                FunctionOperatorMap.Any(x => x.Input == previousExpression);
+
+            var functionMeta = FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var binaryMeta = BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+
+            if (isFunction)
+            {
+                if (functionMeta != null)
+                    return functionMeta;
+                else if (binaryMeta != null)
+                    throw new Exception($"Incorrectly used Binary Operator: {currentOperator}");
             }
             else
             {
-                if (s_binaryOperatorMap.TryGetValue(currentOperator, out var meta))
-                {
-                    return meta;
-                }
-
-                throw new Exception("Invalid Binary Operator");
+                if (binaryMeta != null)
+                    return binaryMeta;
+                else if (functionMeta != null)
+                    throw new Exception($"Incorrectly used Function Operator: {currentOperator}");
             }
+
+            return null;
         }
 
         public static string Infix2Prefix(string infix)
@@ -142,53 +174,5 @@ namespace ExpressionParser
             }
             return new string(reverse);
         }
-
-        private static ReadOnlySpan<char> ReadUntilNonAlphaNumeric(ReadOnlySpan<char> input)
-        {
-            int i = 0;
-            while (i < input.Length)
-            {
-                char current = input[i];
-
-                if (!char.IsLetterOrDigit(current))
-                {
-                    break;
-                }
-                i++;
-            }
-
-            return input.Slice(0, i);
-        }
-
-        public struct OperatorMeta
-        {
-            public int Precedence { get; set; }
-            public Associativity Associativity { get; set; }
-            public string Output { get; set; }
-        }
-
-        public enum Associativity
-        {
-            Left,
-            Right
-        }
-
-        static readonly Dictionary<string, OperatorMeta> s_binaryOperatorMap = new Dictionary<string, OperatorMeta>()
-        {
-            { "+", new OperatorMeta(){ Precedence = 1, Associativity = Associativity.Left, Output = "+" }},
-            { "-", new OperatorMeta(){ Precedence = 1, Associativity = Associativity.Left, Output = "-" }},
-            { "*", new OperatorMeta(){ Precedence = 2, Associativity = Associativity.Left, Output = "*" }},
-            { "/", new OperatorMeta(){ Precedence = 2, Associativity = Associativity.Left, Output = "/" }},
-            { "|", new OperatorMeta(){ Precedence = 3, Associativity = Associativity.Right, Output = "|" }},
-            { "^", new OperatorMeta(){ Precedence = 4, Associativity = Associativity.Right, Output = "^" }},
-            { "&", new OperatorMeta(){ Precedence = 4, Associativity = Associativity.Right, Output = "&" }},
-        };
-
-        static readonly Dictionary<string, OperatorMeta> s_unaryOperatorMap = new Dictionary<string, OperatorMeta>()
-        {
-            { "+", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "u+"}},
-            { "-", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "u-"}},
-            { "~", new OperatorMeta(){ Precedence = int.MaxValue, Associativity= Associativity.Right, Output = "~"}},
-        };
     }
 }

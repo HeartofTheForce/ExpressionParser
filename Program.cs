@@ -15,6 +15,7 @@ namespace ExpressionParser
                     Console.WriteLine($"Expected: {testCase.Item2}");
                     Console.WriteLine($"Actual  : {postfix}");
                 }
+                PostfixUtil.EvaluatePostfix(postfix, TryParse);
             }
         }
 
@@ -39,11 +40,19 @@ namespace ExpressionParser
              //Unary Inside Parentheses
             ("(-b)", "b u-"),
             //Unary Chained
-            ("a+-~b", "a b ~ u- +"),
+            ("a + - ~ b", "a b ~ u- +"),
+            //Function 2 parameter
+            ("max a b + c", "a b max c +"),
             //Complex 1
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
             //Complex 2
             ("(-a ^ b | c) / (d | ~e ^ +f)","a u- b ^ c | d e ~ f u+ ^ | /"),
         };
+
+        static int TryParse(string value)
+        {
+            int.TryParse(value, out int output);
+            return output;
+        }
     }
 }
