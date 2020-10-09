@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq.Expressions;
 using ExpressionParser.Parser;
 
 namespace ExpressionParser
@@ -24,14 +23,22 @@ namespace ExpressionParser
             foreach (var testCase in TestCases)
             {
                 string infix = testCase.Item1;
-                string postfix = Infix.Infix2Postfix(infix);
-                if (postfix != testCase.Item2)
+                try
+                {
+                    string postfix = Infix.Infix2Postfix(infix);
+                    Compiler.Compile<Context, int>(postfix, TryParse);
+                    if (postfix != testCase.Item2)
+                    {
+                        Console.WriteLine($"Failed: {infix}");
+                        Console.WriteLine($"Expected: {testCase.Item2}");
+                        Console.WriteLine($"Actual  : {postfix}");
+                    }
+                }
+                catch
                 {
                     Console.WriteLine($"Failed: {infix}");
-                    Console.WriteLine($"Expected: {testCase.Item2}");
-                    Console.WriteLine($"Actual  : {postfix}");
+                    throw;
                 }
-                Compiler.Compile<Context, int>(postfix, TryParse);
             }
         }
 
@@ -57,6 +64,8 @@ namespace ExpressionParser
             ("(-b)", "b u-"),
             //Unary Chained
             ("a + - ~ b", "a b ~ u- +"),
+            //Function 2 parameter
+            ("max a b + c", "a b max c +"),
             //Complex 1
             ("a+b*(~c^d-e)^(f+g*h)-i", "a b c ~ d ^ e - f g h * + ^ * + i -"),
             //Complex 2

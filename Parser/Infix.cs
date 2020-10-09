@@ -14,6 +14,8 @@ namespace ExpressionParser.Parser
             var depthStack = new Stack<Stack<IOperatorInfo>>();
             depthStack.Push(new Stack<IOperatorInfo>());
 
+            int parameterCount = 0;
+
             string previousExpression = null;
             for (int i = 0; i < infix.Length; i++)
             {
@@ -33,7 +35,9 @@ namespace ExpressionParser.Parser
 
                     while (depthStack.Peek().Count > 0)
                     {
-                        postfix.Add(depthStack.Peek().Pop().Output);
+                        var stackOperatorInfo = depthStack.Peek().Pop();
+                        ProcessOperator(ref parameterCount, stackOperatorInfo);
+                        postfix.Add(stackOperatorInfo.Output);
                     }
                     depthStack.Pop();
                 }
@@ -49,15 +53,16 @@ namespace ExpressionParser.Parser
 
                         while (depthStack.Peek().Count > 0 && Evaluate(operatorInfo, depthStack.Peek().Peek()))
                         {
-                            postfix.Add(depthStack.Peek().Pop().Output);
+                            var stackOperatorInfo = depthStack.Peek().Pop();
+                            ProcessOperator(ref parameterCount, stackOperatorInfo);
+                            postfix.Add(stackOperatorInfo.Output);
                         }
+
                         depthStack.Peek().Push(operatorInfo);
                     }
                     else
                     {
-                        if (previousExpression == ")")
-                            throw new Exception($"Operator Expected: {i}");
-
+                        parameterCount++;
                         postfix.Add(current);
                     }
 
@@ -76,10 +81,24 @@ namespace ExpressionParser.Parser
 
             while (depthStack.Peek().Count > 0)
             {
-                postfix.Add(depthStack.Peek().Pop().Output);
+                var stackOperatorInfo = depthStack.Peek().Pop();
+                ProcessOperator(ref parameterCount, stackOperatorInfo);
+                postfix.Add(stackOperatorInfo.Output);
+            }
+
+            if (parameterCount != 1)
+            {
+                throw new Exception($"Too many operands");
             }
 
             return string.Join(' ', postfix);
+        }
+
+        private static void ProcessOperator(ref int parameterCount, IOperatorInfo operatorInfo)
+        {
+            parameterCount -= operatorInfo.ParameterCount - 1;
+            if (parameterCount < 1)
+                throw new Exception("Too few arguments");
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
