@@ -51,7 +51,9 @@ namespace ExpressionParser
 
         static int TryParse(string value)
         {
-            int.TryParse(value, out int output);
+            if (!int.TryParse(value, out int output))
+                return 1;
+
             return output;
         }
     }
