@@ -22,147 +22,98 @@ namespace ExpressionParser.UTests
             I = 9,
         };
 
-        [Test]
-        public void Parentheses()
+        static readonly End2EndTestCase[] TestCases = new End2EndTestCase[]
         {
-            string infix = "(a + b) * c";
+            //Parentheses
+            new End2EndTestCase()
+            {
+                Infix = "(a + b) * c",
+                ExpectedPostfix = "a b + c *",
+                ExpectedFunction = (Context ctx) => (ctx.A + ctx.B) * ctx.C,
+            },
+            //LeftPrecedence
+            new End2EndTestCase()
+            {
+                Infix = "a + b * c",
+                ExpectedPostfix = "a b c * +",
+                ExpectedFunction = (Context ctx) => ctx.A + ctx.B * ctx.C,
+            },
+            //LeftAssociative
+            new End2EndTestCase()
+            {
+                Infix = "a + b - c",
+                ExpectedPostfix = "a b + c -",
+                ExpectedFunction = (Context ctx) => ctx.A + ctx.B - ctx.C,
+            },
+            //Unary
+            new End2EndTestCase()
+            {
+                Infix = "-a + ~b",
+                ExpectedPostfix = "a u- b ~ +",
+                ExpectedFunction = (Context ctx) => -ctx.A + ~ctx.B,
+            },
+            //UnaryOutsideParentheses
+            new End2EndTestCase()
+            {
+                Infix = "a + ~(b + c)",
+                ExpectedPostfix = "a b c + ~ +",
+                ExpectedFunction = (Context ctx) => ctx.A + ~(ctx.B + ctx.C),
+            },
+            //UnaryInsideParentheses
+            new End2EndTestCase()
+            {
+                Infix = "(-b)",
+                ExpectedPostfix = "b u-",
+                ExpectedFunction = (Context ctx) => (-ctx.B),
+            },
+            //UnaryChained
+            new End2EndTestCase()
+            {
+                Infix = "a + - ~ b",
+                ExpectedPostfix = "a b ~ u- +",
+                ExpectedFunction = (Context ctx) => ctx.A + -~ctx.B,
+            },
+            //Function2Parameters
+            new End2EndTestCase()
+            {
+                Infix = "max a b + c",
+                ExpectedPostfix = "a b max c +",
+                ExpectedFunction = (Context ctx) => Math.Max(ctx.A, ctx.B) + ctx.C,
+            },
+            //Complex1
+            new End2EndTestCase()
+            {
+                Infix = "a+b*(~c^d-e)^(f+g*h)-i",
+                ExpectedPostfix = "a b c ~ d e - ^ * + f g h * + i - ^",
+                ExpectedFunction = (Context ctx) => ctx.A + ctx.B * (~ctx.C ^ ctx.D - ctx.E) ^ (ctx.F + ctx.G * ctx.H) - ctx.I,
+            },
+            //Complex2
+            new End2EndTestCase()
+            {
+                Infix = "(-a ^ b | c) / (d | ~e ^ +f)",
+                ExpectedPostfix = "a u- b ^ c | d e ~ f u+ ^ | /",
+                ExpectedFunction = (Context ctx) => (-ctx.A ^ ctx.B | ctx.C) / (ctx.D | ~ctx.E ^ +ctx.F),
+            },
+        };
 
-            string postfixExpected = "a b + c *";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
+        [TestCaseSource(nameof(TestCases))]
+        public void End2End(End2EndTestCase testCase)
+        {
+            string postfixActual = Infix.Infix2Postfix(testCase.Infix);
+            Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
 
             var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => (ctx.A + ctx.B) * ctx.C;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
+            Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
 
-        [Test]
-        public void LeftPrecedence()
+        public struct End2EndTestCase
         {
-            string infix = "a + b * c";
-
-            string postfixExpected = "a b c * +";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => ctx.A + ctx.B * ctx.C;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
+            public string Infix { get; set; }
+            public string ExpectedPostfix { get; set; }
+            public Func<Context, int> ExpectedFunction { get; set; }
         }
 
-        [Test]
-        public void LeftAssociative()
-        {
-            string infix = "a + b - c";
-
-            string postfixExpected = "a b + c -";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => ctx.A + ctx.B - ctx.C;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void Unary()
-        {
-            string infix = "-a + ~b";
-
-            string postfixExpected = "a u- b ~ +";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => -ctx.A + ~ctx.B;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void UnaryOutsideParentheses()
-        {
-            string infix = "a + ~(b + c)";
-
-            string postfixExpected = "a b c + ~ +";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => ctx.A + ~(ctx.B + ctx.C);
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void UnaryInsideParentheses()
-        {
-            string infix = "(-b)";
-
-            string postfixExpected = "b u-";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => (-ctx.B);
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void UnaryChained()
-        {
-            string infix = "a + - ~ b";
-
-            string postfixExpected = "a b ~ u- +";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => ctx.A + -~ctx.B;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void Function2Parameters()
-        {
-            string infix = "max a b + c";
-
-            string postfixExpected = "a b max c +";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => Math.Max(ctx.A, ctx.B) + ctx.C;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void Complex1()
-        {
-            string infix = "a+b*(~c^d-e)^(f+g*h)-i";
-
-            string postfixExpected = "a b c ~ d e - ^ * + f g h * + i - ^";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => ctx.A + ctx.B * (~ctx.C ^ ctx.D - ctx.E) ^ (ctx.F + ctx.G * ctx.H) - ctx.I;
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        [Test]
-        public void Complex2()
-        {
-            string infix = "(-a ^ b | c) / (d | ~e ^ +f)";
-
-            string postfixExpected = "a u- b ^ c | d e ~ f u+ ^ | /";
-            string postfixActual = Infix.Infix2Postfix(infix);
-            Assert.AreEqual(postfixExpected, postfixActual);
-
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
-            static int FunctionExpected(Context ctx) => (-ctx.A ^ ctx.B | ctx.C) / (ctx.D | ~ctx.E ^ +ctx.F);
-            Assert.AreEqual(FunctionExpected(s_ctx), functionActual(s_ctx));
-        }
-
-        struct Context
+        public struct Context
         {
             public int A { get; set; }
             public int B { get; set; }
