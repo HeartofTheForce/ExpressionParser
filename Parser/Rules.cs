@@ -12,7 +12,7 @@ namespace ExpressionParser.Parser
             new BinaryOperator() { Input = "-", Output = "-", Precedence = 1, Associativity = Associativity.Left, Execute = (args) => Expression.Subtract(args[0], args[1]) },
             new BinaryOperator() { Input = "*", Output = "*", Precedence = 2, Associativity = Associativity.Left, Execute = (args) => Expression.Multiply(args[0], args[1]) },
             new BinaryOperator() { Input = "/", Output = "/", Precedence = 2, Associativity = Associativity.Left, Execute = (args) => Expression.Divide(args[0], args[1]) },
-            new BinaryOperator() { Input = "&", Output = "&", Precedence = 4, Associativity = Associativity.Right, Execute = (args) => Expression.And(args[0], args[1]) },
+            new BinaryOperator() { Input = "&", Output = "&", Precedence = 5, Associativity = Associativity.Right, Execute = (args) => Expression.And(args[0], args[1]) },
             new BinaryOperator() { Input = "^", Output = "^", Precedence = 4, Associativity = Associativity.Right, Execute = (args) => Expression.ExclusiveOr(args[0], args[1]) },
             new BinaryOperator() { Input = "|", Output = "|", Precedence = 3, Associativity = Associativity.Right, Execute = (args) => Expression.Or(args[0], args[1]) },
         };
