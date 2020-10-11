@@ -22,7 +22,8 @@ namespace ExpressionParser.Parser
             new FunctionOperator() { Input = "+", Output = "u+", ParameterCount = 1, Execute = (args) => args[0] },
             new FunctionOperator() { Input = "-", Output = "u-", ParameterCount = 1, Execute = (args) => Expression.Negate(args[0]) },
             new FunctionOperator() { Input = "~", Output = "~", ParameterCount = 1, Execute = (args) => Expression.Not(args[0]) },
-            new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, Execute = (args) => Expression.Call(null, typeof(Math).GetMethod("Max", new Type[]{typeof(int),typeof(int)}), args[0], args[1]) },
+            new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, Execute = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Max), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
+            new FunctionOperator() { Input = "min", Output = "min", ParameterCount = 2, Execute = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Min), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
         };
 
         public interface IOperatorInfo
