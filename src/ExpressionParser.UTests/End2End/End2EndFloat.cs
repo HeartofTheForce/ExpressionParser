@@ -46,6 +46,13 @@ namespace ExpressionParser.UTests.End2End
                 ExpectedPostfix = "1.0 sin 1.0 cos + 1.0 tan +",
                 ExpectedFunction = (Context<double> ctx) => Math.Sin(1.0) + Math.Cos(1.0) + Math.Tan(1.0),
             },
+            //MaxIntFloat
+            new End2EndTestCase<double>()
+            {
+                Infix = "max(2 2.0)",
+                ExpectedPostfix = "2 2.0 max",
+                ExpectedFunction = (Context<double> ctx) => Math.Max(2, 2.0),
+            },
         };
 
         [TestCaseSource(nameof(s_floatTestCases))]
