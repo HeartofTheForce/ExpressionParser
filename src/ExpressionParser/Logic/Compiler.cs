@@ -26,6 +26,9 @@ namespace ExpressionParser.Logic
             new FunctionOperator() { Input = "~", Output = "~", ParameterCount = 1, FunctionExpression = (args) => Expression.Not(args[0]) },
             new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Max), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
             new FunctionOperator() { Input = "min", Output = "min", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Min), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
+            new FunctionOperator() { Input = "sin", Output = "sin", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Sin), new Type[]{ args[0].Type }), args[0]) },
+            new FunctionOperator() { Input = "cos", Output = "cos", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Cos), new Type[]{ args[0].Type }), args[0]) },
+            new FunctionOperator() { Input = "tan", Output = "tan", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Tan), new Type[]{ args[0].Type }), args[0]) },
         };
 
         static readonly Expression[] s_buffer = new Expression[2];
@@ -78,7 +81,7 @@ namespace ExpressionParser.Logic
                 case TokenType.Identifier:
                     return Expression.PropertyOrField(param, token.Value);
                 case TokenType.Float:
-                    return Expression.Constant(float.Parse(token.Value));
+                    return Expression.Constant(double.Parse(token.Value));
                 case TokenType.Integer:
                     return Expression.Constant(int.Parse(token.Value));
                 default:

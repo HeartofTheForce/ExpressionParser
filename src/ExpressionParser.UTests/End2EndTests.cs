@@ -100,21 +100,21 @@ namespace ExpressionParser.UTests
             {
                 Infix = "2.5 + 3.3",
                 ExpectedPostfix = "2.5 3.3 +",
-                ExpectedFunction = (Context ctx) => (int)(2.5f + 3.3f),
+                ExpectedFunction = (Context ctx) => (int)(2.5 + 3.3),
             },
             //LeftToFloat
             new End2EndTestCase()
             {
                 Infix = "2 + 1.5",
                 ExpectedPostfix = "2 1.5 +",
-                ExpectedFunction = (Context ctx) => (int)(2 + 1.5f),
+                ExpectedFunction = (Context ctx) => (int)(2 + 1.5),
             },
              //RightToFloat
             new End2EndTestCase()
             {
                 Infix = "1.5 + 2",
                 ExpectedPostfix = "1.5 2 +",
-                ExpectedFunction = (Context ctx) => (int)(1.5f + 2),
+                ExpectedFunction = (Context ctx) => (int)(1.5 + 2),
             },
         };
 
