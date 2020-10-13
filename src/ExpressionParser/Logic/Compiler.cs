@@ -20,7 +20,7 @@ namespace ExpressionParser.Logic
                 values.Push(ProcessToken(token, param, values));
             }
             if (values.Count != 1)
-                throw new Exception($"{values.Count} Remaining values");
+                throw new Exception($"Remaining values: {values.Count}");
 
             var expression = values.Peek();
             if (expression.Type != typeof(TReturn))
@@ -43,7 +43,7 @@ namespace ExpressionParser.Logic
                         if (operatorInfo != null)
                         {
                             if (operatorInfo.ParameterCount > values.Count)
-                                throw new Exception($"Not enough arguments for {operatorInfo.Output}");
+                                throw new Exception($"Not enough arguments: {operatorInfo.Output}");
 
                             for (int j = operatorInfo.ParameterCount - 1; j >= 0; j--)
                             {
