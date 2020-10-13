@@ -35,13 +35,8 @@ namespace ExpressionParser.Logic
             },
             new Pattern()
             {
-                Regex = new Regex("\\d+\\.\\d+"),
-                Type = TokenType.Float,
-            },
-            new Pattern()
-            {
-                Regex = new Regex("\\d+"),
-                Type = TokenType.Integer,
+                Regex = new Regex("\\d+(?:\\.\\d+)?"),
+                Type = TokenType.Constant,
             },
             new Pattern()
             {

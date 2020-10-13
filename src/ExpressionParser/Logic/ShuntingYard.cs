@@ -2,19 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpressionParser.Logic.Operators;
+using static ExpressionParser.Logic.CompilerOperators;
 
 namespace ExpressionParser.Logic
 {
-    public static class Infix
+    public static class ShuntingYard<T>
     {
-        public static IEnumerable<Token> Infix2Postfix(IEnumerable<Token> infix)
+        public delegate T ProcessToken(Token token, Stack<T> values);
+
+        public static T Process(IEnumerable<Token> infix, ProcessToken processToken)
         {
-            var postfix = new List<Token>();
+            var values = new Stack<T>();
 
             var depthStack = new Stack<Stack<IOperatorInfo>>();
             depthStack.Push(new Stack<IOperatorInfo>());
 
-            int parameterCount = 0;
             Token previousToken = null;
 
             int i = 0;
@@ -34,7 +36,8 @@ namespace ExpressionParser.Logic
 
                             while (depthStack.Peek().Count > 0)
                             {
-                                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
+                                var token = PopTokenize(depthStack);
+                                values.Push(processToken(token, values));
                             }
                             depthStack.Pop();
                         }
@@ -47,18 +50,17 @@ namespace ExpressionParser.Logic
 
                             while (depthStack.Peek().Count > 0 && Evaluate(operatorInfo, depthStack.Peek().Peek()))
                             {
-                                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
+                                var token = PopTokenize(depthStack);
+                                values.Push(processToken(token, values));
                             }
 
                             depthStack.Peek().Push(operatorInfo);
                         }
                         break;
                     case TokenType.Identifier:
-                    case TokenType.Integer:
-                    case TokenType.Float:
+                    case TokenType.Constant:
                         {
-                            parameterCount++;
-                            postfix.Add(current);
+                            values.Push(processToken(current, values));
                         }
                         break;
                 }
@@ -66,7 +68,7 @@ namespace ExpressionParser.Logic
                 if (current.Type != TokenType.NonSignificant)
                     previousToken = current;
 
-                i += current.Value.Length;;
+                i += current.Value.Length;
             }
 
             if (depthStack.Count > 1)
@@ -77,13 +79,14 @@ namespace ExpressionParser.Logic
 
             while (depthStack.Peek().Count > 0)
             {
-                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
+                var token = PopTokenize(depthStack);
+                values.Push(processToken(token, values));
             }
 
-            if (parameterCount > 1)
-                throw new Exception($"Too many operands");
+            if (values.Count != 1)
+                throw new Exception($"Remaining values: {values.Count}");
 
-            return postfix;
+            return values.Peek();
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
@@ -114,8 +117,8 @@ namespace ExpressionParser.Logic
                 previousToken.Type == TokenType.ParenthesisOpen ||
                 previousToken.Type == TokenType.Operator;
 
-            var functionMeta = Compiler.FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
-            var binaryMeta = Compiler.BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var functionMeta = FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var binaryMeta = BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
 
             if (isFunction)
             {
@@ -135,13 +138,9 @@ namespace ExpressionParser.Logic
             throw new Exception($"Invalid Operator: {currentOperator}");
         }
 
-        private static Token PopDepthStack(ref int parameterCount, Stack<Stack<IOperatorInfo>> depthStack)
+        private static Token PopTokenize(Stack<Stack<IOperatorInfo>> depthStack)
         {
             var stackOperatorInfo = depthStack.Peek().Pop();
-            parameterCount -= stackOperatorInfo.ParameterCount - 1;
-            if (parameterCount < 1)
-                throw new Exception("Too few arguments");
-
             return new Token(TokenType.Operator, stackOperatorInfo.Output);
         }
     }

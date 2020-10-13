@@ -32,9 +32,9 @@ namespace ExpressionParser.UTests
                 Infix = "1.75*2",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Float, "1.75"),
+                    new Token(TokenType.Constant, "1.75"),
                     new Token(TokenType.Operator, "*"),
-                    new Token(TokenType.Integer, "2"),
+                    new Token(TokenType.Constant, "2"),
                 },
             },
             new LexerTestCase()
@@ -44,13 +44,13 @@ namespace ExpressionParser.UTests
                 {
                     new Token(TokenType.Operator, "func"),
                     new Token(TokenType.ParenthesisOpen, "("),
-                    new Token(TokenType.Integer, "1"),
+                    new Token(TokenType.Constant, "1"),
                     new Token(TokenType.NonSignificant, " "),
                     new Token(TokenType.Operator, "+"),
                     new Token(TokenType.NonSignificant, " "),
                     new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.NonSignificant, "  "),
-                    new Token(TokenType.Float, "5.3"),
+                    new Token(TokenType.Constant, "5.3"),
                     new Token(TokenType.ParenthesisClose, ")"),
                 },
             },

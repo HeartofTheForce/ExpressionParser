@@ -15,10 +15,9 @@ namespace ExpressionParser.Cli
             string infix = string.Join(' ', args);
             Console.WriteLine(infix);
 
-            var tokens = Lexer.Process(infix);
-            var postfix = Infix.Infix2Postfix(tokens);
+            var infixTokens = Lexer.Process(infix);
 
-            var function = Compiler.Compile<Context, double>(postfix);
+            var function = ExpressionCompiler.Compile<Context, double>(infixTokens);
             double value = function(Context.Empty);
 
             Console.WriteLine(value);

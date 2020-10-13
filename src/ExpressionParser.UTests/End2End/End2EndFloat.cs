@@ -58,13 +58,12 @@ namespace ExpressionParser.UTests.End2End
         [TestCaseSource(nameof(s_floatTestCases))]
         public void FloatTestCases(End2EndTestCase<double> testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
-            var postfixActual = Infix.Infix2Postfix(tokens);
+            var infixTokens = Lexer.Process(testCase.Infix);
 
-            string postfixActualString = string.Join(' ', postfixActual.Select(x => x.Value));
-            Assert.AreEqual(testCase.ExpectedPostfix, postfixActualString);
+            string postfixActual = PostfixCompiler.Compile(infixTokens);
+            Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
 
-            var functionActual = Compiler.Compile<Context<double>, double>(postfixActual);
+            var functionActual = ExpressionCompiler.Compile<Context<double>, double>(infixTokens);
             Assert.AreEqual(testCase.ExpectedFunction(s_floatCtx), functionActual(s_floatCtx));
         }
     }

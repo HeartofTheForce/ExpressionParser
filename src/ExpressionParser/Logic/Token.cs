@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpressionParser
+namespace ExpressionParser.Logic
 {
     public class Token
     {
@@ -39,7 +39,6 @@ namespace ExpressionParser
         ParenthesisClose,
         Operator,
         Identifier,
-        Integer,
-        Float,
+        Constant,
     }
 }
