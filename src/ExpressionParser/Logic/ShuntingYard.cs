@@ -84,7 +84,7 @@ namespace ExpressionParser.Logic
             }
 
             if (values.Count != 1)
-                throw new Exception($"Remaining values: {values.Count}");
+                throw new Exception($"Expression not fully reduced, remaining values: {values.Count}");
 
             return values.Peek();
         }
