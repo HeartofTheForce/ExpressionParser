@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
@@ -94,16 +95,25 @@ namespace ExpressionParser.UTests
                 ExpectedPostfix = "a u- b ^ c | d e ~ f u+ ^ | /",
                 ExpectedFunction = (Context ctx) => (-ctx.A ^ ctx.B | ctx.C) / (ctx.D | ~ctx.E ^ +ctx.F),
             },
+            //Float2Int
+            new End2EndTestCase()
+            {
+                Infix = "2.5 + 3.3",
+                ExpectedPostfix = "2.5 3.3 +",
+                ExpectedFunction = (Context ctx) => (int)(2.5f + 3.3f),
+            },
         };
 
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(End2EndTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            string postfixActual = Infix.Infix2Postfix(tokens);
-            Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
+            var postfixActual = Infix.Infix2Postfix(tokens);
 
-            var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);
+            string postfixActualString = string.Join(' ', postfixActual.Select(x => x.Value));
+            Assert.AreEqual(testCase.ExpectedPostfix, postfixActualString);
+
+            var functionActual = Compiler.Compile<Context, int>(postfixActual);
             Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
 
@@ -125,11 +135,6 @@ namespace ExpressionParser.UTests
             public int G { get; set; }
             public int H { get; set; }
             public int I { get; set; }
-        }
-
-        static bool TryParse(string target, out int value)
-        {
-            return int.TryParse(target, out value);
         }
     }
 }

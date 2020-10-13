@@ -7,9 +7,9 @@ namespace ExpressionParser.Logic
 {
     public static class Infix
     {
-        public static string Infix2Postfix(IEnumerable<Token> infix)
+        public static IEnumerable<Token> Infix2Postfix(IEnumerable<Token> infix)
         {
-            var postfix = new List<string>();
+            var postfix = new List<Token>();
 
             var depthStack = new Stack<Stack<IOperatorInfo>>();
             depthStack.Push(new Stack<IOperatorInfo>());
@@ -36,9 +36,7 @@ namespace ExpressionParser.Logic
 
                             while (depthStack.Peek().Count > 0)
                             {
-                                var stackOperatorInfo = depthStack.Peek().Pop();
-                                ProcessOperator(ref parameterCount, stackOperatorInfo);
-                                postfix.Add(stackOperatorInfo.Output);
+                                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
                             }
                             depthStack.Pop();
                         }
@@ -51,9 +49,7 @@ namespace ExpressionParser.Logic
 
                             while (depthStack.Peek().Count > 0 && Evaluate(operatorInfo, depthStack.Peek().Peek()))
                             {
-                                var stackOperatorInfo = depthStack.Peek().Pop();
-                                ProcessOperator(ref parameterCount, stackOperatorInfo);
-                                postfix.Add(stackOperatorInfo.Output);
+                                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
                             }
 
                             depthStack.Peek().Push(operatorInfo);
@@ -64,7 +60,7 @@ namespace ExpressionParser.Logic
                     case TokenType.Float:
                         {
                             parameterCount++;
-                            postfix.Add(current.Value);
+                            postfix.Add(current);
                         }
                         break;
                 }
@@ -83,22 +79,13 @@ namespace ExpressionParser.Logic
 
             while (depthStack.Peek().Count > 0)
             {
-                var stackOperatorInfo = depthStack.Peek().Pop();
-                ProcessOperator(ref parameterCount, stackOperatorInfo);
-                postfix.Add(stackOperatorInfo.Output);
+                postfix.Add(PopDepthStack(ref parameterCount, depthStack));
             }
 
             if (parameterCount > 1)
                 throw new Exception($"Too many operands");
 
-            return string.Join(' ', postfix);
-        }
-
-        private static void ProcessOperator(ref int parameterCount, IOperatorInfo operatorInfo)
-        {
-            parameterCount -= operatorInfo.ParameterCount - 1;
-            if (parameterCount < 1)
-                throw new Exception("Too few arguments");
+            return postfix;
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
@@ -148,6 +135,16 @@ namespace ExpressionParser.Logic
             }
 
             throw new Exception($"Invalid Operator: {currentOperator}");
+        }
+
+        private static Token PopDepthStack(ref int parameterCount, Stack<Stack<IOperatorInfo>> depthStack)
+        {
+            var stackOperatorInfo = depthStack.Peek().Pop();
+            parameterCount -= stackOperatorInfo.ParameterCount - 1;
+            if (parameterCount < 1)
+                throw new Exception("Too few arguments");
+
+            return new Token(TokenType.Operator, stackOperatorInfo.Output);
         }
     }
 }

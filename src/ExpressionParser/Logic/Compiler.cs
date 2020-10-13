@@ -10,57 +10,61 @@ namespace ExpressionParser.Logic
     {
         static readonly Expression[] s_buffer = new Expression[2];
 
-        public delegate bool TryParse<TReturn>(string target, out TReturn value);
-
-        public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(string postfix, TryParse<TReturn> tryParse)
+        public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(IEnumerable<Token> postfix)
         {
             var param = Expression.Parameter(typeof(TParameter), "ctx");
 
-            Expression TargetParse(string target)
+            var values = new Stack<Expression>();
+            foreach (var token in postfix)
             {
-                if (tryParse(target, out var value))
-                    return Expression.Constant(value);
-
-                return Expression.PropertyOrField(param, target);
+                values.Push(ProcessToken(token, param, values));
             }
+            if (values.Count != 1)
+                throw new Exception($"{values.Count} Remaining values");
 
-            var expression = EvaluatePostfix(postfix, TargetParse);
+            var expression = values.Peek();
+            if (expression.Type != typeof(TReturn))
+                expression = Expression.Convert(expression, typeof(TReturn));
+
             var func = Expression.Lambda<Func<TParameter, TReturn>>(expression, true, param).Compile();
             return func;
         }
 
-        public static Expression EvaluatePostfix(string input, Func<string, Expression> targetParse)
+        public static Expression ProcessToken(Token token, ParameterExpression param, Stack<Expression> values)
         {
-            string[] split = input.Split(' ');
-
-            var values = new Stack<Expression>();
-            for (int i = 0; i < split.Length; i++)
+            switch (token.Type)
             {
-                var operatorInfo = BinaryOperatorMap.FirstOrDefault(x => x.Output == split[i]) ?? FunctionOperatorMap.FirstOrDefault(x => x.Output == split[i]);
-
-                Expression value;
-                if (operatorInfo != null)
-                {
-                    if (operatorInfo.ParameterCount > values.Count)
-                        throw new Exception($"Not enough arguments for {operatorInfo.Output}");
-
-                    for (int j = operatorInfo.ParameterCount - 1; j >= 0; j--)
+                case TokenType.Operator:
                     {
-                        s_buffer[j] = values.Pop();
+                        var operatorInfo =
+                            BinaryOperatorMap.FirstOrDefault(x => x.Output == token.Value) ??
+                            FunctionOperatorMap.FirstOrDefault(x => x.Output == token.Value);
+
+                        if (operatorInfo != null)
+                        {
+                            if (operatorInfo.ParameterCount > values.Count)
+                                throw new Exception($"Not enough arguments for {operatorInfo.Output}");
+
+                            for (int j = operatorInfo.ParameterCount - 1; j >= 0; j--)
+                            {
+                                s_buffer[j] = values.Pop();
+                            }
+
+                            return operatorInfo.Execute(s_buffer);
+                        }
+                        else
+                            throw new Exception($"Invalid Operator: {token.Value}");
                     }
-
-                    value = operatorInfo.Execute(s_buffer);
-                }
-                else
-                    value = targetParse(split[i]);
-
-                values.Push(value);
+                case TokenType.Identifier:
+                    return Expression.PropertyOrField(param, token.Value);
+                case TokenType.Float:
+                    return Expression.Constant(float.Parse(token.Value));
+                case TokenType.Integer:
+                    return Expression.Constant(int.Parse(token.Value));
+                default:
+                    throw new Exception($"Invalid TokenType: {token.Type}");
             }
-
-            if (values.Count != 1)
-                throw new Exception($"{values.Count} Remaining values");
-
-            return values.Peek();
         }
     }
 }
+
