@@ -1,5 +1,5 @@
 using System;
-using ExpressionParser.Parser;
+using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
 
@@ -22,7 +22,7 @@ namespace ExpressionParser.UTests
             I = 9,
         };
 
-        static readonly End2EndTestCase[] TestCases = new End2EndTestCase[]
+        static readonly End2EndTestCase[] s_testCases = new End2EndTestCase[]
         {
             //Parentheses
             new End2EndTestCase()
@@ -76,7 +76,7 @@ namespace ExpressionParser.UTests
             //Function2Parameters
             new End2EndTestCase()
             {
-                Infix = "max a b + c",
+                Infix = "max(a b) + c",
                 ExpectedPostfix = "a b max c +",
                 ExpectedFunction = (Context ctx) => Math.Max(ctx.A, ctx.B) + ctx.C,
             },
@@ -96,10 +96,11 @@ namespace ExpressionParser.UTests
             },
         };
 
-        [TestCaseSource(nameof(TestCases))]
-        public void End2End(End2EndTestCase testCase)
+        [TestCaseSource(nameof(s_testCases))]
+        public void TestCases(End2EndTestCase testCase)
         {
-            string postfixActual = Infix.Infix2Postfix(testCase.Infix);
+            var tokens = Lexer.Process(testCase.Infix);
+            string postfixActual = Infix.Infix2Postfix(tokens);
             Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
 
             var functionActual = Compiler.Compile<Context, int>(postfixActual, TryParse);

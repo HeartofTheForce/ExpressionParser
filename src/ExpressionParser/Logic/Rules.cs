@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ExpressionParser.Parser
+namespace ExpressionParser.Logic
 {
     public static class Rules
     {
