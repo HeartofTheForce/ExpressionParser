@@ -19,19 +19,17 @@ namespace ExpressionParser.Logic
             new BinaryOperator() { Input = "|", Output = "|", Precedence = 1, BinaryExpression = Expression.Or},
         };
 
-        public static readonly IOperatorInfo<Expression>[] FunctionOperatorMap = new FunctionOperator[]
+        public static readonly IOperatorInfo<Expression>[] FunctionOperatorMap = new IOperatorInfo<Expression>[]
         {
-            new FunctionOperator() { Input = "+", Output = "u+", ParameterCount = 1, FunctionExpression = (args) => args[0] },
-            new FunctionOperator() { Input = "-", Output = "u-", ParameterCount = 1, FunctionExpression = (args) => Expression.Negate(args[0]) },
-            new FunctionOperator() { Input = "~", Output = "~", ParameterCount = 1, FunctionExpression = (args) => Expression.Not(args[0]) },
-            new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Max), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
-            new FunctionOperator() { Input = "min", Output = "min", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Min), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
-            new FunctionOperator() { Input = "sin", Output = "sin", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Sin), new Type[]{ args[0].Type }), args[0]) },
-            new FunctionOperator() { Input = "cos", Output = "cos", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Cos), new Type[]{ args[0].Type }), args[0]) },
-            new FunctionOperator() { Input = "tan", Output = "tan", ParameterCount = 1, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Tan), new Type[]{ args[0].Type }), args[0]) },
+            new UnaryOperator() { Input = "+", Output = "u+", UnaryExpression = (arg) => arg },
+            new UnaryOperator() { Input = "-", Output = "u-", UnaryExpression = Expression.Negate },
+            new UnaryOperator() { Input = "~", Output = "~", UnaryExpression = Expression.Not },
+            new MethodCallOperator() { Input = "max", Output = "max", ParameterCount = 2, SourceType = typeof(Math), MethodName = nameof(Math.Max) },
+            new MethodCallOperator() { Input = "min", Output = "min", ParameterCount = 2, SourceType = typeof(Math), MethodName = nameof(Math.Min) },
+            new MethodCallOperator() { Input = "sin", Output = "sin", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Sin) },
+            new MethodCallOperator() { Input = "cos", Output = "cos", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Cos) },
+            new MethodCallOperator() { Input = "tan", Output = "tan", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Tan) },
         };
-
-        static readonly Expression[] s_buffer = new Expression[2];
 
         public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(IEnumerable<Token> postfix)
         {
@@ -68,12 +66,13 @@ namespace ExpressionParser.Logic
                             if (operatorInfo.ParameterCount > values.Count)
                                 throw new Exception($"Not enough arguments: {operatorInfo.Output}");
 
+                            var buffer = new Expression[operatorInfo.ParameterCount];
                             for (int j = operatorInfo.ParameterCount - 1; j >= 0; j--)
                             {
-                                s_buffer[j] = values.Pop();
+                                buffer[j] = values.Pop();
                             }
 
-                            return operatorInfo.Reduce(s_buffer);
+                            return operatorInfo.Reduce(buffer);
                         }
                         else
                             throw new Exception($"Invalid Operator: {token.Value}");

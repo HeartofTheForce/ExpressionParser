@@ -1,0 +1,24 @@
+using System;
+
+namespace ExpressionParser.UTests.End2End
+{
+    public struct End2EndTestCase<T>
+    {
+        public string Infix { get; set; }
+        public string ExpectedPostfix { get; set; }
+        public Func<Context<T>, T> ExpectedFunction { get; set; }
+    }
+
+    public struct Context<T>
+    {
+        public T A { get; set; }
+        public T B { get; set; }
+        public T C { get; set; }
+        public T D { get; set; }
+        public T E { get; set; }
+        public T F { get; set; }
+        public T G { get; set; }
+        public T H { get; set; }
+        public T I { get; set; }
+    }
+}

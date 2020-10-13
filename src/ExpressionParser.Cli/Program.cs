@@ -18,8 +18,8 @@ namespace ExpressionParser.Cli
             var tokens = Lexer.Process(infix);
             var postfix = Infix.Infix2Postfix(tokens);
 
-            var function = Compiler.Compile<Context, float>(postfix);
-            float value = function(Context.Empty);
+            var function = Compiler.Compile<Context, double>(postfix);
+            double value = function(Context.Empty);
 
             Console.WriteLine(value);
         }
