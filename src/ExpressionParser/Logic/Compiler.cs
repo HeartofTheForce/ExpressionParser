@@ -2,12 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using static ExpressionParser.Logic.Rules;
+using ExpressionParser.Logic.Operators;
 
 namespace ExpressionParser.Logic
 {
     public static class Compiler
     {
+        public static readonly IOperatorInfo<Expression>[] BinaryOperatorMap = new BinaryOperator[]
+        {
+            new BinaryOperator() { Input = "*", Output = "*", Precedence = 5, BinaryExpression = Expression.Multiply},
+            new BinaryOperator() { Input = "/", Output = "/", Precedence = 5, BinaryExpression = Expression.Divide},
+            new BinaryOperator() { Input = "+", Output = "+", Precedence = 4, BinaryExpression = Expression.Add},
+            new BinaryOperator() { Input = "-", Output = "-", Precedence = 4, BinaryExpression = Expression.Subtract},
+            new BinaryOperator() { Input = "&", Output = "&", Precedence = 3, BinaryExpression = Expression.And},
+            new BinaryOperator() { Input = "^", Output = "^", Precedence = 2, BinaryExpression = Expression.ExclusiveOr},
+            new BinaryOperator() { Input = "|", Output = "|", Precedence = 1, BinaryExpression = Expression.Or},
+        };
+
+        public static readonly IOperatorInfo<Expression>[] FunctionOperatorMap = new FunctionOperator[]
+        {
+            new FunctionOperator() { Input = "+", Output = "u+", ParameterCount = 1, FunctionExpression = (args) => args[0] },
+            new FunctionOperator() { Input = "-", Output = "u-", ParameterCount = 1, FunctionExpression = (args) => Expression.Negate(args[0]) },
+            new FunctionOperator() { Input = "~", Output = "~", ParameterCount = 1, FunctionExpression = (args) => Expression.Not(args[0]) },
+            new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Max), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
+            new FunctionOperator() { Input = "min", Output = "min", ParameterCount = 2, FunctionExpression = (args) => Expression.Call(null, typeof(Math).GetMethod(nameof(Math.Min), new Type[]{ args[0].Type, args[1].Type }), args[0], args[1]) },
+        };
+
         static readonly Expression[] s_buffer = new Expression[2];
 
         public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(IEnumerable<Token> postfix)
@@ -50,7 +70,7 @@ namespace ExpressionParser.Logic
                                 s_buffer[j] = values.Pop();
                             }
 
-                            return operatorInfo.Execute(s_buffer);
+                            return operatorInfo.Reduce(s_buffer);
                         }
                         else
                             throw new Exception($"Invalid Operator: {token.Value}");

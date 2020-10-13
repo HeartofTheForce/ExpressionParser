@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ExpressionParser.Logic.Rules;
+using ExpressionParser.Logic.Operators;
 
 namespace ExpressionParser.Logic
 {
@@ -116,8 +116,8 @@ namespace ExpressionParser.Logic
                 previousToken.Type == TokenType.ParenthesisOpen ||
                 previousToken.Type == TokenType.Operator;
 
-            var functionMeta = FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
-            var binaryMeta = BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var functionMeta = Compiler.FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var binaryMeta = Compiler.BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
 
             if (isFunction)
             {

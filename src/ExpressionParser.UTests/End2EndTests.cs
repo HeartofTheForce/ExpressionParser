@@ -95,12 +95,26 @@ namespace ExpressionParser.UTests
                 ExpectedPostfix = "a u- b ^ c | d e ~ f u+ ^ | /",
                 ExpectedFunction = (Context ctx) => (-ctx.A ^ ctx.B | ctx.C) / (ctx.D | ~ctx.E ^ +ctx.F),
             },
-            //Float2Int
+            //ReturnFloat2Int
             new End2EndTestCase()
             {
                 Infix = "2.5 + 3.3",
                 ExpectedPostfix = "2.5 3.3 +",
                 ExpectedFunction = (Context ctx) => (int)(2.5f + 3.3f),
+            },
+            //LeftToFloat
+            new End2EndTestCase()
+            {
+                Infix = "2 + 1.5",
+                ExpectedPostfix = "2 1.5 +",
+                ExpectedFunction = (Context ctx) => (int)(2 + 1.5f),
+            },
+             //RightToFloat
+            new End2EndTestCase()
+            {
+                Infix = "1.5 + 2",
+                ExpectedPostfix = "1.5 2 +",
+                ExpectedFunction = (Context ctx) => (int)(1.5f + 2),
             },
         };
 
