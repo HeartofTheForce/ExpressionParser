@@ -37,7 +37,6 @@ namespace ExpressionParser
         NonSignificant,
         ParenthesisOpen,
         ParenthesisClose,
-        Function,
         Operator,
         Identifier,
         Integer,

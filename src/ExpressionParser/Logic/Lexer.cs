@@ -26,7 +26,7 @@ namespace ExpressionParser.Logic
             new Pattern()
             {
                 Regex = new Regex("\\w+(?=\\()"),
-                Type = TokenType.Function,
+                Type = TokenType.Operator,
             },
             new Pattern()
             {

@@ -44,7 +44,6 @@ namespace ExpressionParser.Logic
                         }
                         break;
                     case TokenType.Operator:
-                    case TokenType.Function:
                         {
                             var operatorInfo = ParseOperator(previousToken, current.Value);
                             if (depthStack.Count == 0)
@@ -128,8 +127,7 @@ namespace ExpressionParser.Logic
             bool isFunction =
                 previousToken == null ||
                 previousToken.Type == TokenType.ParenthesisOpen ||
-                previousToken.Type == TokenType.Operator ||
-                previousToken.Type == TokenType.Function;
+                previousToken.Type == TokenType.Operator;
 
             var functionMeta = FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
             var binaryMeta = BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);

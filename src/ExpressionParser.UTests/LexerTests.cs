@@ -42,7 +42,7 @@ namespace ExpressionParser.UTests
                 Infix = "func(1 + a  5.3)",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Function, "func"),
+                    new Token(TokenType.Operator, "func"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Integer, "1"),
                     new Token(TokenType.NonSignificant, " "),
@@ -59,11 +59,11 @@ namespace ExpressionParser.UTests
                 Infix = "func(a b(c))",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Function, "func"),
+                    new Token(TokenType.Operator, "func"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.NonSignificant, " "),
-                    new Token(TokenType.Function, "b"),
+                    new Token(TokenType.Operator, "b"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "c"),
                     new Token(TokenType.ParenthesisClose, ")"),
