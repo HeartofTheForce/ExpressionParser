@@ -15,7 +15,6 @@ namespace ExpressionParser.Logic
             depthStack.Push(new Stack<IOperatorInfo>());
 
             int parameterCount = 0;
-
             Token previousToken = null;
 
             int i = 0;
@@ -23,7 +22,6 @@ namespace ExpressionParser.Logic
             {
                 switch (current.Type)
                 {
-                    case TokenType.NonSignificant: continue;
                     case TokenType.ParenthesisOpen:
                         {
                             depthStack.Push(new Stack<IOperatorInfo>());
@@ -68,14 +66,14 @@ namespace ExpressionParser.Logic
                 if (current.Type != TokenType.NonSignificant)
                     previousToken = current;
 
-                i++;
+                i += current.Value.Length;;
             }
 
             if (depthStack.Count > 1)
-                throw new Exception($") Expected: {infix.Count() - 1}");
+                throw new Exception($") Expected: {i - 1}");
 
             if (depthStack.Count == 0)
-                throw new Exception($"( Expected: {infix.Count() - 1}");
+                throw new Exception($"( Expected: {i - 1}");
 
             while (depthStack.Peek().Count > 0)
             {
