@@ -24,7 +24,7 @@ namespace ExpressionParser.Logic
                 {
                     case TokenType.ParenthesisOpen:
                         {
-                            depthStack.Push(new Stack<IOperatorInfo>());
+                            PushDepthStack(depthStack);
                         }
                         break;
                     case TokenType.ParenthesisClose:
@@ -32,12 +32,7 @@ namespace ExpressionParser.Logic
                             if (depthStack.Count == 1)
                                 throw new Exception($"( Expected: {i}");
 
-                            while (depthStack.Peek().Count > 0)
-                            {
-                                var token = PopTokenize(depthStack);
-                                processToken(token);
-                            }
-                            depthStack.Pop();
+                            FlushDepthStack(depthStack, processToken);
                         }
                         break;
                     case TokenType.Delimiter:
@@ -45,13 +40,8 @@ namespace ExpressionParser.Logic
                             if (depthStack.Count == 1)
                                 throw new Exception($"( Expected: {i}");
 
-                            while (depthStack.Peek().Count > 0)
-                            {
-                                var token = PopTokenize(depthStack);
-                                processToken(token);
-                            }
-                            depthStack.Pop();
-                            depthStack.Push(new Stack<IOperatorInfo>());
+                            FlushDepthStack(depthStack, processToken);
+                            PushDepthStack(depthStack);
                         }
                         break;
                     case TokenType.Operator:
@@ -89,11 +79,7 @@ namespace ExpressionParser.Logic
             if (depthStack.Count == 0)
                 throw new Exception($"( Expected: {i - 1}");
 
-            while (depthStack.Peek().Count > 0)
-            {
-                var token = PopTokenize(depthStack);
-                processToken(token);
-            }
+            FlushDepthStack(depthStack, processToken);
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
@@ -144,6 +130,21 @@ namespace ExpressionParser.Logic
             }
 
             throw new Exception($"Invalid Operator: {currentOperator}");
+        }
+
+        private static void PushDepthStack(Stack<Stack<IOperatorInfo>> depthStack)
+        {
+            depthStack.Push(new Stack<IOperatorInfo>());
+        }
+
+        private static void FlushDepthStack(Stack<Stack<IOperatorInfo>> depthStack, ProcessToken processToken)
+        {
+            while (depthStack.Peek().Count > 0)
+            {
+                var token = PopTokenize(depthStack);
+                processToken(token);
+            }
+            depthStack.Pop();
         }
 
         private static Token PopTokenize(Stack<Stack<IOperatorInfo>> depthStack)
