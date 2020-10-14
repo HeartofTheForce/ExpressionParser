@@ -102,6 +102,13 @@ namespace ExpressionParser.UTests.End2End
                 ExpectedPostfix = "2.5 3.3 +",
                 ExpectedFunction = (Context<int> ctx) => (int)(2.5 + 3.3),
             },
+            //IntOnlyBitwise
+            new End2EndTestCase<int>()
+            {
+                Infix = "~(1 | 4)",
+                ExpectedPostfix = "1 4 | ~",
+                ExpectedFunction = (Context<int> ctx) => ~(1 | 4),
+            },
         };
 
         [TestCaseSource(nameof(s_intTestCases))]

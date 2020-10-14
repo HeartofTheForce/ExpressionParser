@@ -50,10 +50,10 @@ namespace ExpressionParser.Logic
                     return Expression.PropertyOrField(param, token.Value);
                 case TokenType.Constant:
                     {
-                        if (double.TryParse(token.Value, out double doubleValue))
-                            return Expression.Constant(doubleValue);
-                        else if (int.TryParse(token.Value, out int intValue))
+                        if (int.TryParse(token.Value, out int intValue))
                             return Expression.Constant(intValue);
+                        else if (double.TryParse(token.Value, out double doubleValue))
+                            return Expression.Constant(doubleValue);
                         else
                             throw new Exception($"Cannot parse {token.Type}: {token.Value}");
                     }
