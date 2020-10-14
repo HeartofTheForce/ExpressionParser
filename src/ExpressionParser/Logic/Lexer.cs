@@ -79,24 +79,39 @@ namespace ExpressionParser.Logic
                 output.Add(token);
             }
 
-            for (int i = 0; i < output.Count - 1; i++)
+            for (int i = 0; i < output.Count; i++)
             {
                 var current = output[i];
-                if (current.Type == TokenType.Identifier)
+                var next = i < output.Count - 1 ? output[i + 1] : null;
+
+                bool nextIsExpression = next != null && IsExpressionStart(next.Type);
+
+                if (nextIsExpression)
                 {
-                    var next = output[i + 1];
-
-                    bool nextIsExpression =
-                        next.Type == TokenType.ParenthesisOpen ||
-                        next.Type == TokenType.Constant ||
-                        next.Type == TokenType.Identifier;
-
-                    if (nextIsExpression)
+                    if (current.Type == TokenType.Identifier)
                         current.Type = TokenType.Operator;
+                    else if (IsExpressionEnd(current.Type))
+                        throw new Exception($"Expected: {TokenType.Operator} || {TokenType.Delimiter}");
                 }
             }
 
             return output;
+        }
+
+        static bool IsExpressionStart(TokenType type)
+        {
+            return
+                type == TokenType.ParenthesisOpen ||
+                type == TokenType.Constant ||
+                type == TokenType.Identifier;
+        }
+
+        static bool IsExpressionEnd(TokenType type)
+        {
+            return
+                type == TokenType.ParenthesisClose ||
+                type == TokenType.Constant ||
+                type == TokenType.Identifier;
         }
 
         private struct Pattern
