@@ -12,15 +12,15 @@ namespace ExpressionParser.UTests.End2End
     {
         static readonly Context<double> s_floatCtx = new Context<double>()
         {
-            A = 1,
-            B = 2,
-            C = 3,
-            D = 4,
-            E = 5,
-            F = 6,
-            G = 7,
-            H = 8,
-            I = 9,
+            A = 1.1,
+            B = 2.2,
+            C = 3.3,
+            D = 4.4,
+            E = 5.5,
+            F = 6.6,
+            G = 7.7,
+            H = 8.8,
+            I = 9.9,
         };
 
         static readonly End2EndTestCase<double>[] s_floatTestCases = new End2EndTestCase<double>[]
@@ -49,9 +49,30 @@ namespace ExpressionParser.UTests.End2End
             //MaxIntFloat
             new End2EndTestCase<double>()
             {
-                Infix = "max(2 2.0)",
-                ExpectedPostfix = "2 2.0 max",
-                ExpectedFunction = (Context<double> ctx) => Math.Max(2, 2.0),
+                Infix = "max(2, b)",
+                ExpectedPostfix = "2 b max",
+                ExpectedFunction = (Context<double> ctx) => Math.Max(2, ctx.B),
+            },
+            //NestedMultiParameter
+            new End2EndTestCase<double>()
+            {
+                Infix = "max(min(c, b), a)",
+                ExpectedPostfix = "c b min a max",
+                ExpectedFunction = (Context<double> ctx) => Math.Max(Math.Min(ctx.C, ctx.B), ctx.A),
+            },
+            //NestedMultiParameterUnary
+            new End2EndTestCase<double>()
+            {
+                Infix = "max(min(c, b), -a)",
+                ExpectedPostfix = "c b min a u- max",
+                ExpectedFunction = (Context<double> ctx) => Math.Max(Math.Min(ctx.C, ctx.B), -ctx.A),
+            },
+            //SingleParameter
+            new End2EndTestCase<double>()
+            {
+                Infix = "sin(min(c, b) - a)",
+                ExpectedPostfix = "c b min a - sin",
+                ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B) - ctx.A),
             },
         };
 

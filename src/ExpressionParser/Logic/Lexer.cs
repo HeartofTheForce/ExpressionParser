@@ -18,15 +18,15 @@ namespace ExpressionParser.Logic
                 Regex = new Regex("\\("),
                 Type = TokenType.ParenthesisOpen,
             },
-               new Pattern()
+            new Pattern()
             {
                 Regex = new Regex("\\)"),
                 Type = TokenType.ParenthesisClose,
             },
             new Pattern()
             {
-                Regex = new Regex("\\w+(?=\\()"),
-                Type = TokenType.Operator,
+                Regex = new Regex(","),
+                Type = TokenType.Delimiter,
             },
             new Pattern()
             {
@@ -73,7 +73,27 @@ namespace ExpressionParser.Logic
                 if (!TryMatch(input, ref offset, out var token))
                     throw new Exception($"No matching Rules: {offset}");
 
+                if (token.Type == TokenType.NonSignificant)
+                    continue;
+
                 output.Add(token);
+            }
+
+            for (int i = 0; i < output.Count - 1; i++)
+            {
+                var current = output[i];
+                if (current.Type == TokenType.Identifier)
+                {
+                    var next = output[i + 1];
+
+                    bool nextIsExpression =
+                        next.Type == TokenType.ParenthesisOpen ||
+                        next.Type == TokenType.Constant ||
+                        next.Type == TokenType.Identifier;
+
+                    if (nextIsExpression)
+                        current.Type = TokenType.Operator;
+                }
             }
 
             return output;

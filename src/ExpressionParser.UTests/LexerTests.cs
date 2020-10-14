@@ -39,30 +39,28 @@ namespace ExpressionParser.UTests
             },
             new LexerTestCase()
             {
-                Infix = "func(1 + a  5.3)",
+                Infix = "func(1 + a , 5.3)",
                 ExpectedTokens = new Token[]
                 {
                     new Token(TokenType.Operator, "func"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Constant, "1"),
-                    new Token(TokenType.NonSignificant, " "),
                     new Token(TokenType.Operator, "+"),
-                    new Token(TokenType.NonSignificant, " "),
                     new Token(TokenType.Identifier, "a"),
-                    new Token(TokenType.NonSignificant, "  "),
+                    new Token(TokenType.Delimiter, ","),
                     new Token(TokenType.Constant, "5.3"),
                     new Token(TokenType.ParenthesisClose, ")"),
                 },
             },
             new LexerTestCase()
             {
-                Infix = "func(a b(c))",
+                Infix = "func(a, b(c))",
                 ExpectedTokens = new Token[]
                 {
                     new Token(TokenType.Operator, "func"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "a"),
-                    new Token(TokenType.NonSignificant, " "),
+                    new Token(TokenType.Delimiter, ","),
                     new Token(TokenType.Operator, "b"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "c"),

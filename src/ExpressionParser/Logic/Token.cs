@@ -4,7 +4,7 @@ namespace ExpressionParser.Logic
 {
     public class Token
     {
-        public TokenType Type { get; }
+        public TokenType Type { get; set; }
         public string Value { get; }
 
         public Token(TokenType type, string value)
@@ -38,6 +38,7 @@ namespace ExpressionParser.Logic
         ParenthesisOpen,
         ParenthesisClose,
         Operator,
+        Delimiter,
         Identifier,
         Constant,
     }

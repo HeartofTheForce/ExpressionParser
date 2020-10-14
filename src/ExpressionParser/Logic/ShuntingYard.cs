@@ -40,6 +40,20 @@ namespace ExpressionParser.Logic
                             depthStack.Pop();
                         }
                         break;
+                    case TokenType.Delimiter:
+                        {
+                            if (depthStack.Count == 1)
+                                throw new Exception($"( Expected: {i}");
+
+                            while (depthStack.Peek().Count > 0)
+                            {
+                                var token = PopTokenize(depthStack);
+                                processToken(token);
+                            }
+                            depthStack.Pop();
+                            depthStack.Push(new Stack<IOperatorInfo>());
+                        }
+                        break;
                     case TokenType.Operator:
                         {
                             var operatorInfo = ParseOperator(previousToken, current.Value);
@@ -105,27 +119,28 @@ namespace ExpressionParser.Logic
 
         private static IOperatorInfo ParseOperator(Token previousToken, string currentOperator)
         {
-            bool isFunction =
+            bool isPrefix =
                 previousToken == null ||
                 previousToken.Type == TokenType.ParenthesisOpen ||
+                previousToken.Type == TokenType.Delimiter ||
                 previousToken.Type == TokenType.Operator;
 
-            var functionMeta = FunctionOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
-            var binaryMeta = BinaryOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var prefixInfo = PrefixOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
+            var infixInfo = InfixOperatorMap.FirstOrDefault(x => x.Input == currentOperator);
 
-            if (isFunction)
+            if (isPrefix)
             {
-                if (functionMeta != null)
-                    return functionMeta;
-                else if (binaryMeta != null)
-                    throw new Exception($"Incorrectly used Binary Operator: {currentOperator}");
+                if (prefixInfo != null)
+                    return prefixInfo;
+                else if (infixInfo != null)
+                    throw new Exception($"Incorrectly used Infix Operator: {currentOperator}");
             }
             else
             {
-                if (binaryMeta != null)
-                    return binaryMeta;
-                else if (functionMeta != null)
-                    throw new Exception($"Incorrectly used Function Operator: {currentOperator}");
+                if (infixInfo != null)
+                    return infixInfo;
+                else if (prefixInfo != null)
+                    throw new Exception($"Incorrectly used Prefix Operator: {currentOperator}");
             }
 
             throw new Exception($"Invalid Operator: {currentOperator}");

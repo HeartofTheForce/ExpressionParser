@@ -32,8 +32,8 @@ namespace ExpressionParser.Logic
                 case TokenType.Operator:
                     {
                         var operatorInfo =
-                            BinaryOperatorMap.FirstOrDefault(x => x.Output == token.Value) ??
-                            FunctionOperatorMap.FirstOrDefault(x => x.Output == token.Value);
+                            InfixOperatorMap.FirstOrDefault(x => x.Output == token.Value) ??
+                            PrefixOperatorMap.FirstOrDefault(x => x.Output == token.Value);
 
                         if (operatorInfo != null)
                         {

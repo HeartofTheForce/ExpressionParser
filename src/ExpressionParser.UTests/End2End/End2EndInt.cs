@@ -77,7 +77,7 @@ namespace ExpressionParser.UTests.End2End
             //Function2Parameters
             new End2EndTestCase<int>()
             {
-                Infix = "max(a b) + c",
+                Infix = "max(a, b) + c",
                 ExpectedPostfix = "a b max c +",
                 ExpectedFunction = (Context<int> ctx) => Math.Max(ctx.A, ctx.B) + ctx.C,
             },

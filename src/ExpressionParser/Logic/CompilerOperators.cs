@@ -6,7 +6,7 @@ namespace ExpressionParser.Logic
 {
     public static class CompilerOperators
     {
-        public static readonly IOperatorInfo<Expression>[] BinaryOperatorMap = new BinaryOperator[]
+        public static readonly IOperatorInfo<Expression>[] InfixOperatorMap = new BinaryOperator[]
         {
             new BinaryOperator() { Input = "*", Output = "*", Precedence = 5, BinaryExpression = Expression.Multiply},
             new BinaryOperator() { Input = "/", Output = "/", Precedence = 5, BinaryExpression = Expression.Divide},
@@ -17,7 +17,7 @@ namespace ExpressionParser.Logic
             new BinaryOperator() { Input = "|", Output = "|", Precedence = 1, BinaryExpression = Expression.Or},
         };
 
-        public static readonly IOperatorInfo<Expression>[] FunctionOperatorMap = new IOperatorInfo<Expression>[]
+        public static readonly IOperatorInfo<Expression>[] PrefixOperatorMap = new IOperatorInfo<Expression>[]
         {
             new UnaryOperator() { Input = "+", Output = "u+", UnaryExpression = (arg) => arg },
             new UnaryOperator() { Input = "-", Output = "u-", UnaryExpression = Expression.Negate },
