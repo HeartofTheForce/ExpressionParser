@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
@@ -67,7 +66,7 @@ namespace ExpressionParser.UTests.End2End
                 ExpectedPostfix = "c b min a u- max",
                 ExpectedFunction = (Context<double> ctx) => Math.Max(Math.Min(ctx.C, ctx.B), -ctx.A),
             },
-            //SingleParameter
+            //SingleExpressionParameter
             new End2EndTestCase<double>()
             {
                 Infix = "sin(min(c, b) - a)",
