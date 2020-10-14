@@ -73,6 +73,13 @@ namespace ExpressionParser.UTests.End2End
                 ExpectedPostfix = "c b min a - sin",
                 ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B) - ctx.A),
             },
+            //SingleExpressionParameterNoParentheses
+            new End2EndTestCase<double>()
+            {
+                Infix = "sin min(c, b) - a",
+                ExpectedPostfix = "c b min sin a -",
+                ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B)) - ctx.A,
+            },
         };
 
         [TestCaseSource(nameof(s_floatTestCases))]
