@@ -11,8 +11,13 @@ namespace ExpressionParser.Logic
         public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(IEnumerable<Token> infix)
         {
             var param = Expression.Parameter(typeof(TParameter), "ctx");
+            var values = new Stack<Expression>();
+            ShuntingYard<Expression>.Process(infix, (token) => values.Push(ProcessToken(token, param, values)));
 
-            var expression = ShuntingYard<Expression>.Process(infix, (token, values) => ProcessToken(token, param, values));
+            if (values.Count != 1)
+                throw new Exception($"Expression not fully reduced, remaining values: {values.Count}");
+
+            var expression = values.Peek();
             if (expression.Type != typeof(TReturn))
                 expression = Expression.Convert(expression, typeof(TReturn));
 

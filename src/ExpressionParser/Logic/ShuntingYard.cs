@@ -8,12 +8,10 @@ namespace ExpressionParser.Logic
 {
     public static class ShuntingYard<T>
     {
-        public delegate T ProcessToken(Token token, Stack<T> values);
+        public delegate void ProcessToken(Token token);
 
-        public static T Process(IEnumerable<Token> infix, ProcessToken processToken)
+        public static void Process(IEnumerable<Token> infix, ProcessToken processToken)
         {
-            var values = new Stack<T>();
-
             var depthStack = new Stack<Stack<IOperatorInfo>>();
             depthStack.Push(new Stack<IOperatorInfo>());
 
@@ -37,7 +35,7 @@ namespace ExpressionParser.Logic
                             while (depthStack.Peek().Count > 0)
                             {
                                 var token = PopTokenize(depthStack);
-                                values.Push(processToken(token, values));
+                                processToken(token);
                             }
                             depthStack.Pop();
                         }
@@ -51,7 +49,7 @@ namespace ExpressionParser.Logic
                             while (depthStack.Peek().Count > 0 && Evaluate(operatorInfo, depthStack.Peek().Peek()))
                             {
                                 var token = PopTokenize(depthStack);
-                                values.Push(processToken(token, values));
+                                processToken(token);
                             }
 
                             depthStack.Peek().Push(operatorInfo);
@@ -60,7 +58,7 @@ namespace ExpressionParser.Logic
                     case TokenType.Identifier:
                     case TokenType.Constant:
                         {
-                            values.Push(processToken(current, values));
+                            processToken(current);
                         }
                         break;
                 }
@@ -80,13 +78,8 @@ namespace ExpressionParser.Logic
             while (depthStack.Peek().Count > 0)
             {
                 var token = PopTokenize(depthStack);
-                values.Push(processToken(token, values));
+                processToken(token);
             }
-
-            if (values.Count != 1)
-                throw new Exception($"Expression not fully reduced, remaining values: {values.Count}");
-
-            return values.Peek();
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)

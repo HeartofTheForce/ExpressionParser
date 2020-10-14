@@ -7,29 +7,10 @@ namespace ExpressionParser.Logic
     {
         public static string Compile(IEnumerable<Token> infix)
         {
-            string output = ShuntingYard<string>.Process(infix, ProcessToken);
-            return output;
-        }
+            var postfix = new List<string>();
+            ShuntingYard<string>.Process(infix, (token) => postfix.Add(token.Value));
 
-        public static string ProcessToken(Token token, Stack<string> values)
-        {
-            switch (token.Type)
-            {
-                case TokenType.Operator:
-                    {
-                        var postfix = new List<string>() { token.Value };
-
-                        while (values.Count > 0)
-                        {
-                            postfix.Insert(0, values.Pop());
-                        }
-
-                        return string.Join(' ', postfix);
-                    }
-                default:
-                    return token.Value;
-            }
-
+            return string.Join(' ', postfix);
         }
     }
 }

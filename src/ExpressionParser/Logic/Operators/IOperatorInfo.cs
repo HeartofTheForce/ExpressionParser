@@ -6,11 +6,11 @@ namespace ExpressionParser.Logic.Operators
         string Output { get; }
         int Precedence { get; }
         Associativity Associativity { get; }
-        int ParameterCount { get; }
     }
 
     public interface IOperatorInfo<T> : IOperatorInfo
     {
+        int ParameterCount { get; }
         T Reduce(T[] args);
     }
 
