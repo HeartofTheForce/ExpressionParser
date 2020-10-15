@@ -9,7 +9,7 @@ namespace ExpressionParser.UTests.End2End
     [TestFixture]
     public class End2EndFloat
     {
-        static readonly Context<double> s_floatCtx = new Context<double>()
+        static readonly Context<double> s_ctx = new Context<double>()
         {
             A = 1.1,
             B = 2.2,
@@ -22,7 +22,7 @@ namespace ExpressionParser.UTests.End2End
             I = 9.9,
         };
 
-        static readonly End2EndTestCase<double>[] s_floatTestCases = new End2EndTestCase<double>[]
+        static readonly End2EndTestCase<double>[] s_testCases = new End2EndTestCase<double>[]
         {
             //LeftToFloat
             new End2EndTestCase<double>()
@@ -52,37 +52,9 @@ namespace ExpressionParser.UTests.End2End
                 ExpectedPostfix = "2 b max",
                 ExpectedFunction = (Context<double> ctx) => Math.Max(2, ctx.B),
             },
-            //NestedMultiParameter
-            new End2EndTestCase<double>()
-            {
-                Infix = "max(min(c, b), a)",
-                ExpectedPostfix = "c b min a max",
-                ExpectedFunction = (Context<double> ctx) => Math.Max(Math.Min(ctx.C, ctx.B), ctx.A),
-            },
-            //NestedMultiParameterUnary
-            new End2EndTestCase<double>()
-            {
-                Infix = "max(min(c, b), -a)",
-                ExpectedPostfix = "c b min a u- max",
-                ExpectedFunction = (Context<double> ctx) => Math.Max(Math.Min(ctx.C, ctx.B), -ctx.A),
-            },
-            //SingleExpressionParameter
-            new End2EndTestCase<double>()
-            {
-                Infix = "sin(min(c, b) - a)",
-                ExpectedPostfix = "c b min a - sin",
-                ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B) - ctx.A),
-            },
-            //SingleExpressionParameterNoParentheses
-            new End2EndTestCase<double>()
-            {
-                Infix = "sin min(c, b) - a",
-                ExpectedPostfix = "c b min sin a -",
-                ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B)) - ctx.A,
-            },
         };
 
-        [TestCaseSource(nameof(s_floatTestCases))]
+        [TestCaseSource(nameof(s_testCases))]
         public void FloatTestCases(End2EndTestCase<double> testCase)
         {
             var infixTokens = Lexer.Process(testCase.Infix);
@@ -91,7 +63,7 @@ namespace ExpressionParser.UTests.End2End
             Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
 
             var functionActual = ExpressionCompiler.Compile<Context<double>, double>(infixTokens);
-            Assert.AreEqual(testCase.ExpectedFunction(s_floatCtx), functionActual(s_floatCtx));
+            Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
     }
 }

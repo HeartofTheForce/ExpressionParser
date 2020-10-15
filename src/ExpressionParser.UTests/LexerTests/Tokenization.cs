@@ -8,36 +8,54 @@ namespace ExpressionParser.UTests
 {
 
     [TestFixture]
-    public class LexerTests
+    public class Tokenization
     {
 
-        static readonly LexerTestCase[] s_testCases = new LexerTestCase[]
+        static readonly TokenizationTestCase[] s_testCases = new TokenizationTestCase[]
         {
-            new LexerTestCase()
+            //NoWhitespace
+            new TokenizationTestCase()
             {
-                Infix = "(a+b*c)",
+                Infix = "(-1+a)",
                 ExpectedTokens = new Token[]
                 {
                     new Token(TokenType.ParenthesisOpen, "("),
-                    new Token(TokenType.Identifier, "a"),
+                    new Token(TokenType.Operator, "-"),
+                    new Token(TokenType.Constant, "1"),
                     new Token(TokenType.Operator, "+"),
-                    new Token(TokenType.Identifier, "b"),
-                    new Token(TokenType.Operator, "*"),
-                    new Token(TokenType.Identifier, "c"),
+                    new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.ParenthesisClose, ")"),
                 },
             },
-            new LexerTestCase()
+            //WhitespaceExcluded
+            new TokenizationTestCase()
             {
-                Infix = "1.75*2",
+                Infix = "( - 1 + a )",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Constant, "1.75"),
-                    new Token(TokenType.Operator, "*"),
-                    new Token(TokenType.Constant, "2"),
+                    new Token(TokenType.ParenthesisOpen, "("),
+                    new Token(TokenType.Operator, "-"),
+                    new Token(TokenType.Constant, "1"),
+                    new Token(TokenType.Operator, "+"),
+                    new Token(TokenType.Identifier, "a"),
+                    new Token(TokenType.ParenthesisClose, ")"),
                 },
             },
-            new LexerTestCase()
+            //IdentifierNumberSuffix
+            new TokenizationTestCase()
+            {
+                Infix = "a0 * a1 & 0",
+                ExpectedTokens = new Token[]
+                {
+                    new Token(TokenType.Identifier, "a0"),
+                    new Token(TokenType.Operator, "*"),
+                    new Token(TokenType.Identifier, "a1"),
+                    new Token(TokenType.Operator, "&"),
+                    new Token(TokenType.Constant, "0"),
+                },
+            },
+            //DelimiterWhitespace
+            new TokenizationTestCase()
             {
                 Infix = "func(1 + a , 5.3)",
                 ExpectedTokens = new Token[]
@@ -52,9 +70,10 @@ namespace ExpressionParser.UTests
                     new Token(TokenType.ParenthesisClose, ")"),
                 },
             },
-            new LexerTestCase()
+            //DelimiterNoWhitespace
+            new TokenizationTestCase()
             {
-                Infix = "func(a, b(c))",
+                Infix = "func(a,b(c),d)",
                 ExpectedTokens = new Token[]
                 {
                     new Token(TokenType.Operator, "func"),
@@ -65,13 +84,15 @@ namespace ExpressionParser.UTests
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "c"),
                     new Token(TokenType.ParenthesisClose, ")"),
+                    new Token(TokenType.Delimiter, ","),
+                    new Token(TokenType.Identifier, "d"),
                     new Token(TokenType.ParenthesisClose, ")"),
                 },
             },
         };
 
         [TestCaseSource(nameof(s_testCases))]
-        public void TestCases(LexerTestCase testCase)
+        public void TestCases(TokenizationTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
 
@@ -85,7 +106,7 @@ namespace ExpressionParser.UTests
             }
         }
 
-        public struct LexerTestCase
+        public struct TokenizationTestCase
         {
             public string Infix { get; set; }
             public Token[] ExpectedTokens { get; set; }

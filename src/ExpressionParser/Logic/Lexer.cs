@@ -84,14 +84,14 @@ namespace ExpressionParser.Logic
                 var current = output[i];
                 var next = i < output.Count - 1 ? output[i + 1] : null;
 
-                bool nextIsExpression = next != null && IsExpressionStart(next.Type);
-
-                if (nextIsExpression)
+                if (current.Type == TokenType.Identifier && next?.Type == TokenType.ParenthesisOpen)
+                    current.Type = TokenType.Operator;
+                else
                 {
-                    if (current.Type == TokenType.Identifier)
-                        current.Type = TokenType.Operator;
-                    else if (IsExpressionEnd(current.Type))
-                        throw new Exception($"Expected: {TokenType.Operator} || {TokenType.Delimiter}");
+                    bool nextIsExpression = next != null && IsExpressionStart(next.Type);
+
+                    if (nextIsExpression && IsExpressionEnd(current.Type))
+                        throw new SequentialOperandException();
                 }
             }
 
@@ -118,6 +118,11 @@ namespace ExpressionParser.Logic
         {
             public Regex Regex { get; set; }
             public TokenType Type { get; set; }
+        }
+
+        public class SequentialOperandException : Exception
+        {
+            public SequentialOperandException() : base($"Expected: {TokenType.Operator} || {TokenType.Delimiter}") { }
         }
     }
 }
