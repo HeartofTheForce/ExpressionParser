@@ -4,7 +4,7 @@ Infix String -> C# Expresion Tree Parser
 # Functionality
 - Operator Precedence
 - Parentheses
-- Postfix Operators
+- Infix Operators
 - Prefix Operators
 - Fixed Parameter Functions
 - Integral Constants
