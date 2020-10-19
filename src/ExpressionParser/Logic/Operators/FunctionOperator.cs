@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace ExpressionParser.Logic.Operators
 {
-    public class MethodCallOperator : IOperatorInfo<Expression>
+    public class FunctionOperator : IOperatorInfo<Expression>
     {
         public string Input { get; set; }
         public string Output { get; set; }

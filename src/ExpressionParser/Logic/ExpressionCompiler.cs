@@ -12,7 +12,7 @@ namespace ExpressionParser.Logic
         {
             var param = Expression.Parameter(typeof(TParameter), "ctx");
             var values = new Stack<Expression>();
-            ShuntingYard<Expression>.Process(infix, (token) => values.Push(ProcessToken(token, param, values)));
+            ShuntingYard.Process(infix, (token) => values.Push(ProcessToken(token, param, values)));
 
             if (values.Count != 1)
                 throw new Exception($"Expression not fully reduced, remaining values: {values.Count}");

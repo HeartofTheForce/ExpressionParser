@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpressionParser.UTests.End2End
+namespace ExpressionParser.UTests.End2EndTests
 {
     public struct End2EndTestCase<T>
     {

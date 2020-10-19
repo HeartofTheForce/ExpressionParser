@@ -3,7 +3,7 @@ using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
 
-namespace ExpressionParser.UTests.End2End
+namespace ExpressionParser.UTests.End2EndTests
 {
 
     [TestFixture]
@@ -55,7 +55,7 @@ namespace ExpressionParser.UTests.End2End
         };
 
         [TestCaseSource(nameof(s_testCases))]
-        public void FloatTestCases(End2EndTestCase<double> testCase)
+        public void TestCases(End2EndTestCase<double> testCase)
         {
             var infixTokens = Lexer.Process(testCase.Infix);
 

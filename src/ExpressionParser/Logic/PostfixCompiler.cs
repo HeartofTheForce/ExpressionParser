@@ -7,7 +7,7 @@ namespace ExpressionParser.Logic
         public static string Compile(IEnumerable<Token> infix)
         {
             var postfix = new List<string>();
-            ShuntingYard<string>.Process(infix, (token) => postfix.Add(token.Value));
+            ShuntingYard.Process(infix, (token) => postfix.Add(token.Value));
 
             return string.Join(' ', postfix);
         }

@@ -1,10 +1,8 @@
-using System;
 using System.Linq;
 using ExpressionParser.Logic;
 using NUnit.Framework;
-#pragma warning disable IDE0047
 
-namespace ExpressionParser.UTests
+namespace ExpressionParser.UTests.LexerTests
 {
 
     [TestFixture]

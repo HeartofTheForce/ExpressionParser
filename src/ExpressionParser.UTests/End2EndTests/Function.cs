@@ -3,7 +3,7 @@ using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
 
-namespace ExpressionParser.UTests.End2End
+namespace ExpressionParser.UTests.End2EndTests
 {
 
     [TestFixture]
@@ -58,6 +58,13 @@ namespace ExpressionParser.UTests.End2End
                 Infix = "max(a + b, b + c)",
                 ExpectedPostfix = "a b + b c + max",
                 ExpectedFunction = (Context<double> ctx) => Math.Max(ctx.A + ctx.B, ctx.B + ctx.C),
+            },
+            //FunctionNestedMultiExpressionParameter
+            new End2EndTestCase<double>()
+            {
+                Infix = "max((a + b) * 2, (b / c))",
+                ExpectedPostfix = "a b + 2 * b c / max",
+                ExpectedFunction = (Context<double> ctx) => Math.Max((ctx.A + ctx.B) * 2, (ctx.B / ctx.C)),
             },
             //FunctionChainedMultiParameter
             new End2EndTestCase<double>()
