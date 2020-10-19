@@ -6,103 +6,111 @@ using static ExpressionParser.Logic.CompilerOperators;
 
 namespace ExpressionParser.Logic
 {
-    public static class ShuntingYard
+    public class ShuntingYard
     {
-        private class DepthContext : Stack<IOperatorInfo>
+        private readonly IEnumerable<Token> _infix;
+        private readonly ProcessToken _processToken;
+        private readonly Stack<DepthContext> _depthStack;
+        private Token _previousToken;
+        private int _index;
+
+        private ShuntingYard(IEnumerable<Token> infix, ProcessToken processToken)
         {
-            public int OperandCount { get; set; }
-            public DepthContext()
-            {
-                OperandCount = 0;
-            }
+            _infix = infix;
+            _processToken = processToken;
+
+            _depthStack = new Stack<DepthContext>();
+            _depthStack.Push(new DepthContext());
+
+            _previousToken = null;
+            _index = 0;
         }
 
         public delegate void ProcessToken(Token token);
-
         public static void Process(IEnumerable<Token> infix, ProcessToken processToken)
         {
-            var depthStack = new Stack<DepthContext>();
-            depthStack.Push(new DepthContext());
+            var shuntingYard = new ShuntingYard(infix, processToken);
+            shuntingYard.Process();
+        }
 
-            Token previousToken = null;
-
-            int i = 0;
-            foreach (var current in infix)
+        private void Process()
+        {
+            foreach (var current in _infix)
             {
                 switch (current.Type)
                 {
                     case TokenType.ParenthesisOpen:
                         {
-                            PushDepthStack(depthStack);
+                            PushDepthStack();
                         }
                         break;
                     case TokenType.ParenthesisClose:
                         {
-                            if (depthStack.Count == 1)
+                            if (_depthStack.Count == 1)
                                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                            FlushDepthStack(depthStack, processToken);
+                            FlushDepthStack(_processToken);
 
-                            if (depthStack.Peek().TryPeek(out var stackOperatorInfo) && stackOperatorInfo is FunctionOperator)
+                            if (_depthStack.Peek().TryPeek(out var stackOperatorInfo) && stackOperatorInfo is FunctionOperator)
                             {
-                                if (depthStack.TryPeek(out var depthContext) && depthContext.OperandCount != stackOperatorInfo.ParameterCount)
+                                if (_depthStack.TryPeek(out var depthContext) && depthContext.OperandCount != stackOperatorInfo.ParameterCount)
                                     throw new ArgumentMismatchException(stackOperatorInfo, depthContext.OperandCount);
 
-                                FlushDepthStack(depthStack, processToken);
+                                FlushDepthStack(_processToken);
                             }
                         }
                         break;
                     case TokenType.Delimiter:
                         {
-                            if (depthStack.Count == 1)
+                            if (_depthStack.Count == 1)
                                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                            FlushDepthStack(depthStack, processToken);
-                            PushDepthStack(depthStack);
+                            FlushDepthStack(_processToken);
+                            PushDepthStack();
                         }
                         break;
                     case TokenType.Operator:
                         {
-                            var operatorInfo = ParseOperator(previousToken, current.Value);
-                            if (depthStack.Count == 0)
+                            var operatorInfo = ParseOperator(_previousToken, current.Value);
+                            if (_depthStack.Count == 0)
                                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                            while (depthStack.Peek().TryPeek(out var stackOperatorInfo) && Evaluate(operatorInfo, stackOperatorInfo))
+                            while (_depthStack.Peek().TryPeek(out var stackOperatorInfo) && Evaluate(operatorInfo, stackOperatorInfo))
                             {
-                                var token = PopTokenize(depthStack);
-                                processToken(token);
+                                var token = PopTokenize();
+                                _processToken(token);
                             }
 
                             if (operatorInfo is FunctionOperator)
-                                depthStack.Push(new DepthContext());
+                                _depthStack.Push(new DepthContext());
 
-                            depthStack.Peek().Push(operatorInfo);
+                            _depthStack.Peek().Push(operatorInfo);
                         }
                         break;
                     case TokenType.Identifier:
                     case TokenType.Constant:
                         {
-                            var depthContext = depthStack.Peek();
+                            var depthContext = _depthStack.Peek();
                             depthContext.OperandCount += 1;
 
-                            processToken(current);
+                            _processToken(current);
                         }
                         break;
                 }
 
                 if (current.Type != TokenType.NonSignificant)
-                    previousToken = current;
+                    _previousToken = current;
 
-                i += current.Value.Length;
+                _index += current.Value.Length;
             }
 
-            if (depthStack.Count > 1)
+            if (_depthStack.Count > 1)
                 throw new MissingTokenException(TokenType.ParenthesisClose);
 
-            if (depthStack.Count == 0)
+            if (_depthStack.Count == 0)
                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-            FlushDepthStack(depthStack, processToken);
+            FlushDepthStack(_processToken);
         }
 
         private static bool Evaluate(IOperatorInfo current, IOperatorInfo previous)
@@ -155,30 +163,30 @@ namespace ExpressionParser.Logic
             throw new Exception($"Invalid Operator: {currentOperator}");
         }
 
-        private static void PushDepthStack(Stack<DepthContext> depthStack)
+        private void PushDepthStack()
         {
-            depthStack.Push(new DepthContext());
+            _depthStack.Push(new DepthContext());
         }
 
-        private static void FlushDepthStack(Stack<DepthContext> depthStack, ProcessToken processToken)
+        private void FlushDepthStack(ProcessToken processToken)
         {
-            while (depthStack.Peek().Count > 0)
+            while (_depthStack.Peek().Count > 0)
             {
-                var token = PopTokenize(depthStack);
+                var token = PopTokenize();
                 processToken(token);
             }
 
-            var depthContext = depthStack.Pop();
+            var depthContext = _depthStack.Pop();
             if (depthContext.OperandCount != 1)
                 throw new ExpressionReductionException(depthContext.OperandCount);
 
-            if (depthStack.TryPeek(out var parentDepthContext))
+            if (_depthStack.TryPeek(out var parentDepthContext))
                 parentDepthContext.OperandCount += depthContext.OperandCount;
         }
 
-        private static Token PopTokenize(Stack<DepthContext> depthStack)
+        private Token PopTokenize()
         {
-            var depthContext = depthStack.Peek();
+            var depthContext = _depthStack.Peek();
             var stackOperatorInfo = depthContext.Pop();
 
             depthContext.OperandCount -= stackOperatorInfo.ParameterCount - 1;
@@ -193,6 +201,15 @@ namespace ExpressionParser.Logic
             public MissingTokenException(TokenType type) : base($"Missing: {type}")
             {
                 Type = type;
+            }
+        }
+
+        private class DepthContext : Stack<IOperatorInfo>
+        {
+            public int OperandCount { get; set; }
+            public DepthContext()
+            {
+                OperandCount = 0;
             }
         }
 
