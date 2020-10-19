@@ -87,6 +87,20 @@ namespace ExpressionParser.UTests.End2EndTests
                 ExpectedPostfix = "c b min a - sin",
                 ExpectedFunction = (Context<double> ctx) => Math.Sin(Math.Min(ctx.C, ctx.B) - ctx.A),
             },
+            //PostfixInfixUnary
+            new End2EndTestCase<double>()
+            {
+                Infix = "(a,b,c)clamp + - d",
+                ExpectedPostfix = "a b c clamp d u- +",
+                ExpectedFunction = (Context<double> ctx) => Math.Clamp(ctx.A, ctx.B, ctx.C) + -ctx.D,
+            },
+            //Postfix
+            new End2EndTestCase<double>()
+            {
+                Infix = "(a + b, b - c, c * d)clamp",
+                ExpectedPostfix = "a b + b c - c d * clamp",
+                ExpectedFunction = (Context<double> ctx) => Math.Clamp(ctx.A + ctx.B, ctx.B - ctx.C, ctx.C * ctx.D),
+            },
         };
 
         [TestCaseSource(nameof(s_testCases))]

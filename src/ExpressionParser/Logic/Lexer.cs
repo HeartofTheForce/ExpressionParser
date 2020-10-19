@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace ExpressionParser.Logic
@@ -41,7 +42,7 @@ namespace ExpressionParser.Logic
             new Pattern()
             {
                 Regex = new Regex("[^\\s\\(\\)\\w,]+"),
-                Type = TokenType.Operator,
+                Type = TokenType.Identifier,
             },
         };
 
@@ -76,6 +77,9 @@ namespace ExpressionParser.Logic
                 if (token.Type == TokenType.NonSignificant)
                     continue;
 
+                if (token.Type == TokenType.Identifier && CompilerOperators.OperatorMap.Any(x => x.Input == token.Value))
+                    token.Type = TokenType.Operator;
+
                 output.Add(token);
             }
 
@@ -84,15 +88,9 @@ namespace ExpressionParser.Logic
                 var current = output[i];
                 var next = i < output.Count - 1 ? output[i + 1] : null;
 
-                if (current.Type == TokenType.Identifier && next?.Type == TokenType.ParenthesisOpen)
-                    current.Type = TokenType.Operator;
-                else
-                {
-                    bool nextIsExpression = next != null && IsExpressionStart(next.Type);
-
-                    if (nextIsExpression && IsExpressionEnd(current.Type))
-                        throw new SequentialOperandException();
-                }
+                bool nextIsExpression = next != null && IsExpressionStart(next.Type);
+                if (nextIsExpression && IsExpressionEnd(current.Type))
+                    throw new SequentialOperandException();
             }
 
             return output;

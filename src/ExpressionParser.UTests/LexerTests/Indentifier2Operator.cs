@@ -11,27 +11,27 @@ namespace ExpressionParser.UTests.LexerTests
         {
             new LexerTestCase()
             {
-                Infix = "func",
+                Infix = "max",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Identifier, "func"),
+                    new Token(TokenType.Operator, "max"),
                 },
             },
             new LexerTestCase()
             {
-                Infix = "func(",
+                Infix = "max(",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Operator, "func"),
+                    new Token(TokenType.Operator, "max"),
                     new Token(TokenType.ParenthesisOpen, "("),
                 },
             },
             new LexerTestCase()
             {
-                Infix = "func (",
+                Infix = "min (",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Operator, "func"),
+                    new Token(TokenType.Operator, "min"),
                     new Token(TokenType.ParenthesisOpen, "("),
                 },
             },

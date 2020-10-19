@@ -55,10 +55,10 @@ namespace ExpressionParser.UTests.LexerTests
             //DelimiterWhitespace
             new TokenizationTestCase()
             {
-                Infix = "func(1 + a , 5.3)",
+                Infix = "min(1 + a , 5.3)",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Operator, "func"),
+                    new Token(TokenType.Operator, "min"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Constant, "1"),
                     new Token(TokenType.Operator, "+"),
@@ -71,14 +71,14 @@ namespace ExpressionParser.UTests.LexerTests
             //DelimiterNoWhitespace
             new TokenizationTestCase()
             {
-                Infix = "func(a,b(c),d)",
+                Infix = "max(a,sin(c),d)",
                 ExpectedTokens = new Token[]
                 {
-                    new Token(TokenType.Operator, "func"),
+                    new Token(TokenType.Operator, "max"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.Delimiter, ","),
-                    new Token(TokenType.Operator, "b"),
+                    new Token(TokenType.Operator, "sin"),
                     new Token(TokenType.ParenthesisOpen, "("),
                     new Token(TokenType.Identifier, "c"),
                     new Token(TokenType.ParenthesisClose, ")"),

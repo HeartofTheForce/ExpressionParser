@@ -21,9 +21,13 @@ namespace ExpressionParser.UTests.LexerTests
             {
                 Infix = "1 a",
             },
-              new NoSequentialOperandTestCase()
+            new NoSequentialOperandTestCase()
             {
                 Infix = "a a",
+            },
+            new NoSequentialOperandTestCase()
+            {
+                Infix = "a (",
             },
             new NoSequentialOperandTestCase()
             {

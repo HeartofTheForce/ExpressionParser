@@ -10,8 +10,8 @@ namespace ExpressionParser.Logic.Operators
         public Type SourceType { get; }
         public string MethodName { get; }
 
-        public FunctionOperator(string input, string output, int argCount, Type sourceType, string methodName)
-        : base(input, output, int.MaxValue, Associativity.Right, 0, argCount)
+        public FunctionOperator(string input, string output, int preArgCount, int postArgCount, Type sourceType, string methodName)
+        : base(input, output, int.MaxValue, Associativity.Right, preArgCount, postArgCount)
         {
             SourceType = sourceType;
             MethodName = methodName;
