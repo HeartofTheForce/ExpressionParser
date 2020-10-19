@@ -3,16 +3,17 @@ using System.Linq.Expressions;
 
 namespace ExpressionParser.Logic.Operators
 {
-    public class BinaryOperator : IOperatorInfo<Expression>
+    public class BinaryOperator : OperatorInfo<Expression>
     {
-        public string Input { get; set; }
-        public string Output { get; set; }
-        public int Precedence { get; set; }
-        public Associativity Associativity => Associativity.Left;
-        public int ParameterCount => 2;
         public Func<Expression, Expression, Expression> BinaryExpression { get; set; }
 
-        Expression IOperatorInfo<Expression>.Reduce(Expression[] args)
+        public BinaryOperator(string input, string output, int precedence, Func<Expression, Expression, Expression> binaryExpression)
+        : base(input, output, precedence, Associativity.Left, 1, 1)
+        {
+            BinaryExpression = binaryExpression;
+        }
+
+        override public Expression Reduce(Expression[] args)
         {
             var left = args[0];
             var right = args[1];

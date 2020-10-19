@@ -3,16 +3,17 @@ using System.Linq.Expressions;
 
 namespace ExpressionParser.Logic.Operators
 {
-    public class UnaryOperator : IOperatorInfo<Expression>
+    public class UnaryOperator : OperatorInfo<Expression>
     {
-        public string Input { get; set; }
-        public string Output { get; set; }
-        public int Precedence => int.MaxValue;
-        public Associativity Associativity => Associativity.Right;
-        public int ParameterCount => 1;
-        public Func<Expression, Expression> UnaryExpression { get; set; }
+        public Func<Expression, Expression> UnaryExpression { get; }
 
-        Expression IOperatorInfo<Expression>.Reduce(Expression[] args)
+        public UnaryOperator(string input, string output, Func<Expression, Expression> unaryExpression)
+        : base(input, output, int.MaxValue, Associativity.Right, 0, 1)
+        {
+            UnaryExpression = unaryExpression;
+        }
+
+        override public Expression Reduce(Expression[] args)
         {
             return UnaryExpression(args[0]);
         }

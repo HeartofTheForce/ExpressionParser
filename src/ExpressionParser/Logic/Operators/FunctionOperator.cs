@@ -5,18 +5,19 @@ using System.Reflection;
 
 namespace ExpressionParser.Logic.Operators
 {
-    public class FunctionOperator : IOperatorInfo<Expression>
+    public class FunctionOperator : OperatorInfo<Expression>
     {
-        public string Input { get; set; }
-        public string Output { get; set; }
-        public int Precedence => int.MaxValue;
-        public Associativity Associativity => Associativity.Right;
-        public int ParameterCount { get; set; }
+        public Type SourceType { get; }
+        public string MethodName { get; }
 
-        public Type SourceType { get; set; }
-        public string MethodName { get; set; }
+        public FunctionOperator(string input, string output, int argCount, Type sourceType, string methodName)
+        : base(input, output, int.MaxValue, Associativity.Right, 0, argCount)
+        {
+            SourceType = sourceType;
+            MethodName = methodName;
+        }
 
-        Expression IOperatorInfo<Expression>.Reduce(Expression[] args)
+        override public Expression Reduce(Expression[] args)
         {
             MethodInfo methodInfo;
             methodInfo = SourceType.GetMethod(MethodName, args.Select(x => x.Type).ToArray());

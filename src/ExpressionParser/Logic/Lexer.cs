@@ -40,7 +40,7 @@ namespace ExpressionParser.Logic
             },
             new Pattern()
             {
-                Regex = new Regex("[^\\s\\(\\)\\w]+"),
+                Regex = new Regex("[^\\s\\(\\)\\w,]+"),
                 Type = TokenType.Operator,
             },
         };

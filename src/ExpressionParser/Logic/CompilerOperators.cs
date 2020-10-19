@@ -6,27 +6,27 @@ namespace ExpressionParser.Logic
 {
     public static class CompilerOperators
     {
-        public static readonly IOperatorInfo<Expression>[] InfixOperatorMap = new BinaryOperator[]
+        public static readonly OperatorInfo<Expression>[] InfixOperatorMap = new BinaryOperator[]
         {
-            new BinaryOperator() { Input = "*", Output = "*", Precedence = 5, BinaryExpression = Expression.Multiply},
-            new BinaryOperator() { Input = "/", Output = "/", Precedence = 5, BinaryExpression = Expression.Divide},
-            new BinaryOperator() { Input = "+", Output = "+", Precedence = 4, BinaryExpression = Expression.Add},
-            new BinaryOperator() { Input = "-", Output = "-", Precedence = 4, BinaryExpression = Expression.Subtract},
-            new BinaryOperator() { Input = "&", Output = "&", Precedence = 3, BinaryExpression = Expression.And},
-            new BinaryOperator() { Input = "^", Output = "^", Precedence = 2, BinaryExpression = Expression.ExclusiveOr},
-            new BinaryOperator() { Input = "|", Output = "|", Precedence = 1, BinaryExpression = Expression.Or},
+            new BinaryOperator("*", "*", 5, Expression.Multiply),
+            new BinaryOperator("/", "/", 5, Expression.Divide),
+            new BinaryOperator("+", "+", 4, Expression.Add),
+            new BinaryOperator("-", "-", 4, Expression.Subtract),
+            new BinaryOperator("&", "&", 3, Expression.And),
+            new BinaryOperator("^", "^", 2, Expression.ExclusiveOr),
+            new BinaryOperator("|", "|", 1, Expression.Or),
         };
 
-        public static readonly IOperatorInfo<Expression>[] PrefixOperatorMap = new IOperatorInfo<Expression>[]
+        public static readonly OperatorInfo<Expression>[] PrefixOperatorMap = new OperatorInfo<Expression>[]
         {
-            new UnaryOperator() { Input = "+", Output = "u+", UnaryExpression = (arg) => arg },
-            new UnaryOperator() { Input = "-", Output = "u-", UnaryExpression = Expression.Negate },
-            new UnaryOperator() { Input = "~", Output = "~", UnaryExpression = Expression.Not },
-            new FunctionOperator() { Input = "max", Output = "max", ParameterCount = 2, SourceType = typeof(Math), MethodName = nameof(Math.Max) },
-            new FunctionOperator() { Input = "min", Output = "min", ParameterCount = 2, SourceType = typeof(Math), MethodName = nameof(Math.Min) },
-            new FunctionOperator() { Input = "sin", Output = "sin", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Sin) },
-            new FunctionOperator() { Input = "cos", Output = "cos", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Cos) },
-            new FunctionOperator() { Input = "tan", Output = "tan", ParameterCount = 1, SourceType = typeof(Math), MethodName = nameof(Math.Tan) },
+            new UnaryOperator("+", "u+", (arg) => arg),
+            new UnaryOperator("-", "u-", Expression.Negate),
+            new UnaryOperator("~", "~", Expression.Not),
+            new FunctionOperator("max", "max", 2, typeof(Math), nameof(Math.Max)),
+            new FunctionOperator("min", "min", 2, typeof(Math), nameof(Math.Min)),
+            new FunctionOperator("sin", "sin", 1, typeof(Math), nameof(Math.Sin)),
+            new FunctionOperator("cos", "cos", 1, typeof(Math), nameof(Math.Cos)),
+            new FunctionOperator("tan", "tan", 1, typeof(Math), nameof(Math.Tan)),
         };
     }
 }

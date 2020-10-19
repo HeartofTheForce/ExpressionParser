@@ -34,30 +34,6 @@ namespace ExpressionParser.UTests.ShuntingYardTests
                 Infix = "()",
                 ExpectedRemainingValues = 0,
             },
-            //TooFewArgumentsBinary
-            new ExpressionReductionTestCase()
-            {
-                Infix = "1 +",
-                ExpectedRemainingValues = 0,
-            },
-            //TooFewArgumentsUnary
-            new ExpressionReductionTestCase()
-            {
-                Infix = "-",
-                ExpectedRemainingValues = 0,
-            },
-            //TooFewArgumentsBinaryParameter
-            new ExpressionReductionTestCase()
-            {
-                Infix = "max(1 + 2 * ,3)",
-                ExpectedRemainingValues = 0,
-            },
-            //TooFewArgumentsUnaryParameter
-            new ExpressionReductionTestCase()
-            {
-                Infix = "max(1, -)",
-                ExpectedRemainingValues = 0,
-            },
         };
 
         [TestCaseSource(nameof(s_testCases))]

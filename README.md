@@ -12,7 +12,7 @@ Infix String -> C# Expresion Tree Parser
 - Implicit Integral -> Floating-point Parameter Conversion
 
 # How it works
-- Uses `IOperatorInfo` arrays to descibe Functions/Operators
+- Uses `OperatorInfo` arrays to descibe Functions/Operators
 - Tokenization using Regular Expressions
 - Parsing using [Shunting-yard Algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm)
 - Compilation using [C# Expression Trees](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees/)
