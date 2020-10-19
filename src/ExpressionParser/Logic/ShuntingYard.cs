@@ -46,7 +46,7 @@ namespace ExpressionParser.Logic
                             if (depthStack.Peek().TryPeek(out var stackOperatorInfo) && stackOperatorInfo is FunctionOperator)
                             {
                                 if (depthStack.TryPeek(out var depthContext) && depthContext.OperandCount != stackOperatorInfo.ParameterCount)
-                                    throw new ArgumentMismatchException(stackOperatorInfo.ParameterCount, depthContext.OperandCount);
+                                    throw new ArgumentMismatchException(stackOperatorInfo, depthContext.OperandCount);
 
                                 FlushDepthStack(depthStack, processToken);
                             }
@@ -198,12 +198,12 @@ namespace ExpressionParser.Logic
 
         public class ArgumentMismatchException : Exception
         {
-            public int Expected { get; set; }
+            public IOperatorInfo OperatorInfo { get; set; }
             public int Actual { get; set; }
 
-            public ArgumentMismatchException(int expected, int actual) : base($"Argument mismatch expected {expected} got {actual}")
+            public ArgumentMismatchException(IOperatorInfo operatorInfo, int actual) : base($"Argument mismatch expected {operatorInfo.ParameterCount} got {actual}")
             {
-                Expected = expected;
+                OperatorInfo = operatorInfo;
                 Actual = actual;
             }
         }
