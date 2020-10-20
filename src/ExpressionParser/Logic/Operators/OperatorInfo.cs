@@ -1,3 +1,5 @@
+using System;
+
 namespace ExpressionParser.Logic.Operators
 {
     public abstract class OperatorInfo
@@ -19,6 +21,27 @@ namespace ExpressionParser.Logic.Operators
             Associativity = associativity;
             PreArgCount = preArgCount;
             PostArgCount = postArgCount;
+        }
+
+        public static bool IsLowerPrecedence(OperatorInfo current, OperatorInfo target)
+        {
+            if (current.Precedence == target.Precedence)
+            {
+                if (current.Associativity == target.Associativity)
+                {
+                    switch (current.Associativity)
+                    {
+                        case Associativity.Left: return true;
+                        case Associativity.Right: return false;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Operators with same Precedence must have same Associativity");
+                }
+            }
+
+            return current.Precedence < target.Precedence;
         }
     }
 

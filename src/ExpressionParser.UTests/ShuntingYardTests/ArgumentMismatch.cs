@@ -3,11 +3,9 @@ using NUnit.Framework;
 
 namespace ExpressionParser.UTests.ShuntingYardTests
 {
-
     [TestFixture]
     public class ArgumentMismatch
     {
-
         static readonly ArgumentMismatchTestCase[] s_postTestCases = new ArgumentMismatchTestCase[]
         {
             //TooMany
@@ -58,34 +56,6 @@ namespace ExpressionParser.UTests.ShuntingYardTests
                 Infix = "max(1, 1 + min(2))",
                 ExpectedOperator = "min",
                 ActualArguments = 1,
-            },
-            //TooFewArgumentsBinary
-            new ArgumentMismatchTestCase()
-            {
-                Infix = "1 +",
-                ExpectedOperator = "+",
-                ActualArguments = 0,
-            },
-            //TooFewArgumentsUnary
-            new ArgumentMismatchTestCase()
-            {
-                Infix = "-",
-                ExpectedOperator = "-",
-                ActualArguments = 0,
-            },
-            //TooFewArgumentsBinaryChained
-            new ArgumentMismatchTestCase()
-            {
-                Infix = "1 + 2 *",
-                ExpectedOperator = "*",
-                ActualArguments = 0,
-            },
-            //TooFewArgumentsUnaryParameter
-            new ArgumentMismatchTestCase()
-            {
-                Infix = "max(1, -)",
-                ExpectedOperator = "-",
-                ActualArguments = 0,
             },
             //TooFewPrefix
             new ArgumentMismatchTestCase()

@@ -1,11 +1,9 @@
-using System;
 using ExpressionParser.Logic;
 using NUnit.Framework;
 #pragma warning disable IDE0047
 
 namespace ExpressionParser.UTests.End2EndTests
 {
-
     [TestFixture]
     public class OperatorPrecedence
     {

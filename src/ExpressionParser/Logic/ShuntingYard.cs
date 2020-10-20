@@ -12,7 +12,7 @@ namespace ExpressionParser.Logic
         private readonly ProcessToken _processToken;
         private readonly Stack<Stack<OperatorInfo>> _operatorStack;
         private readonly Stack<int> _argStack;
-        private bool _expectPrefix;
+        private bool _wantExpression;
 
         private ShuntingYard(IEnumerable<Token> infix, ProcessToken processToken)
         {
@@ -35,126 +35,127 @@ namespace ExpressionParser.Logic
         {
             foreach (var current in _infix)
             {
-                switch (current.Type)
-                {
-                    case TokenType.ParenthesisOpen:
-                        {
-                            PushStack();
-                        }
-                        break;
-                    case TokenType.ParenthesisClose:
-                        {
-                            if (_operatorStack.Count == 1)
-                                throw new MissingTokenException(TokenType.ParenthesisOpen);
-
-                            FlushStack(_processToken);
-                        }
-                        break;
-                    case TokenType.Delimiter:
-                        {
-                            if (_operatorStack.Count == 1)
-                                throw new MissingTokenException(TokenType.ParenthesisOpen);
-
-                            FlushStack(_processToken);
-                            PushStack();
-                        }
-                        break;
-                    case TokenType.Operator:
-                        {
-                            var operatorInfo = ParseOperator(current.Value);
-                            if (_operatorStack.Count == 0)
-                                throw new MissingTokenException(TokenType.ParenthesisOpen);
-
-                            while (_operatorStack.Peek().TryPeek(out var stackOperatorInfo) && Evaluate(operatorInfo, stackOperatorInfo))
-                            {
-                                var token = PopTokenize();
-                                _processToken(token);
-                            }
-
-                            int availableArgs = _argStack.Pop();
-                            if (availableArgs != operatorInfo.PreArgCount)
-                                throw new PreArgumentMismatchException(operatorInfo, availableArgs);
-
-                            _argStack.Push(availableArgs - operatorInfo.PreArgCount);
-                            _argStack.Push(0);
-
-                            _operatorStack.Peek().Push(operatorInfo);
-                        }
-                        break;
-                    case TokenType.Identifier:
-                    case TokenType.Constant:
-                        {
-                            _expectPrefix = false;
-                            _argStack.Push(_argStack.Pop() + 1);
-                            _processToken(current);
-                        }
-                        break;
-                }
+                if (_wantExpression)
+                    WantExpression(current);
+                else
+                    HaveExpression(current);
             }
+        }
 
-            if (_operatorStack.Count > 1)
-                throw new MissingTokenException(TokenType.ParenthesisClose);
+        private void WantExpression(Token current)
+        {
+            switch (current.Type)
+            {
+                case TokenType.ParenthesisOpen:
+                    {
+                        PushStack();
+                    }
+                    break;
+                case TokenType.Operator:
+                    {
+                        var operatorInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsPrefix(x));
+                        if (operatorInfo == null)
+                            throw new Exception($"Invalid Prefix Operator: {current.Value}");
 
+                        ProcessOperator(operatorInfo);
+                    }
+                    break;
+                case TokenType.Identifier:
+                case TokenType.Constant:
+                    {
+                        _wantExpression = false;
+                        _argStack.Push(_argStack.Pop() + 1);
+                        _processToken(current);
+                    }
+                    break;
+                default: throw new ExpressionTermException(current.Type);
+            }
+        }
+
+        private void HaveExpression(Token current)
+        {
+            switch (current.Type)
+            {
+                case TokenType.ParenthesisClose:
+                    {
+                        if (_operatorStack.Count == 1)
+                            throw new MissingTokenException(TokenType.ParenthesisOpen);
+
+                        FlushStack(_processToken);
+                    }
+                    break;
+                case TokenType.Delimiter:
+                    {
+                        if (_operatorStack.Count == 1)
+                            throw new MissingTokenException(TokenType.ParenthesisOpen);
+
+                        FlushStack(_processToken);
+                        PushStack();
+                    }
+                    break;
+                case TokenType.Operator:
+                    {
+                        var infixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsInfix(x));
+                        var postfixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsPostfix(x));
+
+                        if (infixInfo != null && postfixInfo != null)
+                            throw new Exception("Prefix and Postfix operators must be distinct");
+
+                        OperatorInfo operatorInfo;
+                        if (infixInfo != null)
+                        {
+                            _wantExpression = true;
+                            operatorInfo = infixInfo;
+                        }
+                        else if (postfixInfo != null)
+                            operatorInfo = postfixInfo;
+                        else
+                            throw new Exception($"Invalid Prefix or Postfix Operator: {current.Value}");
+
+                        ProcessOperator(operatorInfo);
+                    }
+                    break;
+                case TokenType.EndOfString:
+                    {
+                        if (_operatorStack.Count > 1)
+                            throw new MissingTokenException(TokenType.ParenthesisClose);
+
+                        if (_operatorStack.Count == 0)
+                            throw new MissingTokenException(TokenType.ParenthesisOpen);
+
+                        FlushStack(_processToken);
+                    }
+                    break;
+                default: throw new UnexpectedTokenException(current.Type);
+            }
+        }
+
+        private void ProcessOperator(OperatorInfo operatorInfo)
+        {
             if (_operatorStack.Count == 0)
                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-            FlushStack(_processToken);
-        }
-
-        private static bool Evaluate(OperatorInfo current, OperatorInfo previous)
-        {
-            if (current.Precedence == previous.Precedence)
+            while (_operatorStack.Peek().TryPeek(out var stackOperatorInfo) && OperatorInfo.IsLowerPrecedence(operatorInfo, stackOperatorInfo))
             {
-                if (current.Associativity == previous.Associativity)
-                {
-                    switch (current.Associativity)
-                    {
-                        case Associativity.Left: return true;
-                        case Associativity.Right: return false;
-                    }
-                }
-                else
-                {
-                    throw new Exception("Operators with same Precedence must have same Associativity");
-                }
+                var token = PopTokenize();
+                _processToken(token);
             }
 
-            return current.Precedence < previous.Precedence;
-        }
+            int availableArgs = _argStack.Pop();
+            if (availableArgs != operatorInfo.PreArgCount)
+                throw new PreArgumentMismatchException(operatorInfo, availableArgs);
 
-        private OperatorInfo ParseOperator(string currentOperator)
-        {
-            OperatorInfo output = null;
-            if (_expectPrefix)
-                output = OperatorMap.SingleOrDefault(x => x.Input == currentOperator && IsPrefix(x));
-            else
-            {
-                var infixInfo = OperatorMap.SingleOrDefault(x => x.Input == currentOperator && IsInfix(x));
-                var postfixInfo = OperatorMap.SingleOrDefault(x => x.Input == currentOperator && IsPostfix(x));
+            _argStack.Push(availableArgs - operatorInfo.PreArgCount);
+            _argStack.Push(0);
 
-                if (infixInfo != null && postfixInfo != null)
-                    throw new Exception("Prefix and Postfix operators must be distinct");
-
-                if (infixInfo != null)
-                {
-                    _expectPrefix = true;
-                    output = infixInfo;
-                }
-                else
-                    output = postfixInfo;
-            }
-
-            if (output == null)
-                throw new Exception($"Invalid Operator: {currentOperator}");
-
-            return output;
+            _operatorStack.Peek().Push(operatorInfo);
         }
 
         private void PushStack()
         {
             _operatorStack.Push(new Stack<OperatorInfo>());
             _argStack.Push(0);
-            _expectPrefix = true;
+            _wantExpression = true;
         }
 
         private void FlushStack(ProcessToken processToken)
@@ -219,6 +220,26 @@ namespace ExpressionParser.Logic
             {
                 OperatorInfo = operatorInfo;
                 Actual = actual;
+            }
+        }
+
+        public class ExpressionTermException : Exception
+        {
+            public TokenType Type { get; set; }
+
+            public ExpressionTermException(TokenType type) : base($"Invalid Expression Term {type}")
+            {
+                Type = type;
+            }
+        }
+
+        public class UnexpectedTokenException : Exception
+        {
+            public TokenType Type { get; set; }
+
+            public UnexpectedTokenException(TokenType type) : base($"Unexpected {type}")
+            {
+                Type = type;
             }
         }
 

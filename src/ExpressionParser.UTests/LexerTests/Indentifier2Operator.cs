@@ -15,6 +15,7 @@ namespace ExpressionParser.UTests.LexerTests
                 ExpectedTokens = new Token[]
                 {
                     new Token(TokenType.Operator, "max"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             new LexerTestCase()
@@ -24,6 +25,7 @@ namespace ExpressionParser.UTests.LexerTests
                 {
                     new Token(TokenType.Operator, "max"),
                     new Token(TokenType.ParenthesisOpen, "("),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             new LexerTestCase()
@@ -33,6 +35,7 @@ namespace ExpressionParser.UTests.LexerTests
                 {
                     new Token(TokenType.Operator, "min"),
                     new Token(TokenType.ParenthesisOpen, "("),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
         };

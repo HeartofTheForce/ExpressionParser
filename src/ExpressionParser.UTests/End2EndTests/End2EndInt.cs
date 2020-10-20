@@ -4,7 +4,6 @@ using NUnit.Framework;
 
 namespace ExpressionParser.UTests.End2EndTests
 {
-
     [TestFixture]
     public class End2EndInt
     {

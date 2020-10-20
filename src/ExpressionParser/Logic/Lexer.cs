@@ -68,7 +68,6 @@ namespace ExpressionParser.Logic
             var output = new List<Token>();
 
             int offset = 0;
-
             while (offset < input.Length)
             {
                 if (!TryMatch(input, ref offset, out var token))
@@ -83,33 +82,8 @@ namespace ExpressionParser.Logic
                 output.Add(token);
             }
 
-            for (int i = 0; i < output.Count; i++)
-            {
-                var current = output[i];
-                var next = i < output.Count - 1 ? output[i + 1] : null;
-
-                bool nextIsExpression = next != null && IsExpressionStart(next.Type);
-                if (nextIsExpression && IsExpressionEnd(current.Type))
-                    throw new SequentialOperandException();
-            }
-
+            output.Add(new Token(TokenType.EndOfString, null));
             return output;
-        }
-
-        static bool IsExpressionStart(TokenType type)
-        {
-            return
-                type == TokenType.ParenthesisOpen ||
-                type == TokenType.Constant ||
-                type == TokenType.Identifier;
-        }
-
-        static bool IsExpressionEnd(TokenType type)
-        {
-            return
-                type == TokenType.ParenthesisClose ||
-                type == TokenType.Constant ||
-                type == TokenType.Identifier;
         }
 
         private struct Pattern

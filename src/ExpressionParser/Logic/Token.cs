@@ -41,5 +41,6 @@ namespace ExpressionParser.Logic
         Delimiter,
         Identifier,
         Constant,
+        EndOfString,
     }
 }

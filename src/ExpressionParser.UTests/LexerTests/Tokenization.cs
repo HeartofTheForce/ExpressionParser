@@ -4,11 +4,9 @@ using NUnit.Framework;
 
 namespace ExpressionParser.UTests.LexerTests
 {
-
     [TestFixture]
     public class Tokenization
     {
-
         static readonly TokenizationTestCase[] s_testCases = new TokenizationTestCase[]
         {
             //NoWhitespace
@@ -23,6 +21,7 @@ namespace ExpressionParser.UTests.LexerTests
                     new Token(TokenType.Operator, "+"),
                     new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.ParenthesisClose, ")"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             //WhitespaceExcluded
@@ -37,6 +36,7 @@ namespace ExpressionParser.UTests.LexerTests
                     new Token(TokenType.Operator, "+"),
                     new Token(TokenType.Identifier, "a"),
                     new Token(TokenType.ParenthesisClose, ")"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             //IdentifierNumberSuffix
@@ -50,6 +50,7 @@ namespace ExpressionParser.UTests.LexerTests
                     new Token(TokenType.Identifier, "a1"),
                     new Token(TokenType.Operator, "&"),
                     new Token(TokenType.Constant, "0"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             //DelimiterWhitespace
@@ -66,6 +67,7 @@ namespace ExpressionParser.UTests.LexerTests
                     new Token(TokenType.Delimiter, ","),
                     new Token(TokenType.Constant, "5.3"),
                     new Token(TokenType.ParenthesisClose, ")"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
             //DelimiterNoWhitespace
@@ -85,6 +87,7 @@ namespace ExpressionParser.UTests.LexerTests
                     new Token(TokenType.Delimiter, ","),
                     new Token(TokenType.Identifier, "d"),
                     new Token(TokenType.ParenthesisClose, ")"),
+                    new Token(TokenType.EndOfString, null),
                 },
             },
         };

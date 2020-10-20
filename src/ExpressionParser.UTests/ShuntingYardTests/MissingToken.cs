@@ -3,11 +3,9 @@ using NUnit.Framework;
 
 namespace ExpressionParser.UTests.ShuntingYardTests
 {
-
     [TestFixture]
     public class MissingToken
     {
-
         static readonly MissingTokenTestCase[] s_testCases = new MissingTokenTestCase[]
         {
             //MissingOpen
@@ -26,12 +24,6 @@ namespace ExpressionParser.UTests.ShuntingYardTests
             new MissingTokenTestCase()
             {
                 Infix = "max(1,2",
-                ExpectedType = TokenType.ParenthesisClose,
-            },
-            //MissingCloseFunctionDelimiter
-            new MissingTokenTestCase()
-            {
-                Infix = "max(1,2,",
                 ExpectedType = TokenType.ParenthesisClose,
             },
         };
