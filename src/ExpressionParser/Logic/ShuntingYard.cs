@@ -227,7 +227,7 @@ namespace ExpressionParser.Logic
         {
             public TokenType Type { get; set; }
 
-            public ExpressionTermException(TokenType type) : base($"Invalid Expression Term {type}")
+            public ExpressionTermException(TokenType type) : base($"Invalid Expression Term: {type}")
             {
                 Type = type;
             }
@@ -237,7 +237,7 @@ namespace ExpressionParser.Logic
         {
             public TokenType Type { get; set; }
 
-            public UnexpectedTokenException(TokenType type) : base($"Unexpected {type}")
+            public UnexpectedTokenException(TokenType type) : base($"Unexpected: {type}")
             {
                 Type = type;
             }
