@@ -22,3 +22,6 @@ Infix String -> C# Expresion Tree Parser
 Demo using `ExpressionParser.Cli`
 
 `dotnet run -p ./src/ExpressionParser.Cli/ -- "1 + 2 * 3"`
+
+# Running Tests
+`dotnet test ./src/ExpressionParser.UTests`
