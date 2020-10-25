@@ -1,5 +1,6 @@
 ﻿using System;
-using ExpressionParser.Logic;
+using ExpressionParser.Compilers;
+using ExpressionParser.Parsers;
 
 namespace ExpressionParser.Cli
 {

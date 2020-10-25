@@ -1,8 +1,7 @@
 using System;
 using System.Linq.Expressions;
-using ExpressionParser.Logic.Operators;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Operators
 {
     public static class CompilerOperators
     {

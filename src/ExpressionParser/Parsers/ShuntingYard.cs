@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExpressionParser.Logic.Operators;
-using static ExpressionParser.Logic.CompilerOperators;
+using ExpressionParser.Operators;
+using static ExpressionParser.Operators.CompilerOperators;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Parsers
 {
     public class ShuntingYard
     {

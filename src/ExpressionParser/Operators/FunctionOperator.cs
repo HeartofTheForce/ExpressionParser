@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ExpressionParser.Logic.Operators
+namespace ExpressionParser.Operators
 {
     public class FunctionOperator : OperatorInfo<Expression>
     {

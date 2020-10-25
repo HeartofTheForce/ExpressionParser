@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace ExpressionParser.Logic.Operators
+namespace ExpressionParser.Operators
 {
     public class BinaryOperator : OperatorInfo<Expression>
     {

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using static ExpressionParser.Logic.CompilerOperators;
+using ExpressionParser.Parsers;
+using static ExpressionParser.Operators.CompilerOperators;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Compilers
 {
     public static class ExpressionCompiler
     {

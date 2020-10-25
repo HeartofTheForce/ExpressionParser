@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpressionParser.Logic.Operators
+namespace ExpressionParser.Operators
 {
     public abstract class OperatorInfo
     {

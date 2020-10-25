@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using ExpressionParser.Parsers;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Compilers
 {
     public static class PostfixCompiler
     {

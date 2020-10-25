@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Parsers
 {
     public class Token
     {

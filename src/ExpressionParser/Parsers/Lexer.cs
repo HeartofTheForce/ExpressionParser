@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static ExpressionParser.Operators.CompilerOperators;
 
-namespace ExpressionParser.Logic
+namespace ExpressionParser.Parsers
 {
     public static class Lexer
     {
@@ -76,7 +77,7 @@ namespace ExpressionParser.Logic
                 if (token.Type == TokenType.NonSignificant)
                     continue;
 
-                if (token.Type == TokenType.Identifier && CompilerOperators.OperatorMap.Any(x => x.Input == token.Value))
+                if (token.Type == TokenType.Identifier && OperatorMap.Any(x => x.Input == token.Value))
                     token.Type = TokenType.Operator;
 
                 output.Add(token);

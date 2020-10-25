@@ -1,4 +1,4 @@
-using ExpressionParser.Logic;
+using ExpressionParser.Parsers;
 using NUnit.Framework;
 
 namespace ExpressionParser.UTests.ShuntingYardTests
