@@ -32,7 +32,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(MissingTokenTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.MissingTokenException>(() => ShuntingYard.Process(tokens, (token) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ShuntingYard.MissingTokenException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

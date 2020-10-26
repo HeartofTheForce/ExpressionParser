@@ -92,10 +92,5 @@ namespace ExpressionParser.Parsers
             public Regex Regex { get; set; }
             public TokenType Type { get; set; }
         }
-
-        public class SequentialOperandException : Exception
-        {
-            public SequentialOperandException() : base($"Expected: {TokenType.Operator} || {TokenType.Delimiter}") { }
-        }
     }
 }

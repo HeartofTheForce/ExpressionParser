@@ -62,7 +62,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(UnexpectedTokenTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.UnexpectedTokenException>(() => ShuntingYard.Process(tokens, (token) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ShuntingYard.UnexpectedTokenException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

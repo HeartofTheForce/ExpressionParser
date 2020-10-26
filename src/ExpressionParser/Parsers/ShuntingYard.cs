@@ -27,7 +27,7 @@ namespace ExpressionParser.Parsers
             PushStack();
         }
 
-        public delegate void ProcessOperand(Token token);
+        public delegate void ProcessOperand(string value);
         public delegate void ProcessOperator(OperatorInfo operatorInfo);
 
         public static void Process(IEnumerable<Token> infix, ProcessOperand processOperand, ProcessOperator processOperator)
@@ -70,7 +70,7 @@ namespace ExpressionParser.Parsers
                     {
                         _wantExpression = false;
                         _argStack.Push(_argStack.Pop() + 1);
-                        _processOperand(current);
+                        _processOperand(current.Value);
                     }
                     break;
                 default: throw new ExpressionTermException(current.Type);

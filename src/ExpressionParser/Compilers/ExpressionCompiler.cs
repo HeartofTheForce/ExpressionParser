@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using ExpressionParser.Operators;
 using ExpressionParser.Parsers;
 
@@ -12,7 +13,7 @@ namespace ExpressionParser.Compilers
         {
             var param = Expression.Parameter(typeof(TParameter), "ctx");
             var values = new Stack<Expression>();
-            ShuntingYard.Process(infix, (token) => ProcessToken(token, param, values), (operatorInfo) => ProcessOperator(operatorInfo, values));
+            ShuntingYard.Process(infix, (value) => ProcessOperand(value, param, values), (operatorInfo) => ProcessOperator(operatorInfo, values));
 
             if (values.Count != 1)
                 throw new Exception($"Expression not fully reduced, remaining values: {values.Count}");
@@ -42,29 +43,41 @@ namespace ExpressionParser.Compilers
                 throw new Exception($"Cannot reduce: {operatorInfo.Output}");
         }
 
-        public static void ProcessToken(Token token, ParameterExpression param, Stack<Expression> values)
+        public static void ProcessOperand(string value, ParameterExpression param, Stack<Expression> values)
         {
-            Expression expression;
-            switch (token.Type)
+            Expression operandExpression;
+            if (TryGetMemberInfo(param, value, out var memberInfo))
+                operandExpression = Expression.MakeMemberAccess(param, memberInfo);
+            else if (int.TryParse(value, out int intValue))
+                operandExpression = Expression.Constant(intValue);
+            else if (double.TryParse(value, out double doubleValue))
+                operandExpression = Expression.Constant(doubleValue);
+            else
+                throw new Exception($"Cannot parse operand: {value}");
+
+            values.Push(operandExpression);
+        }
+
+        private static bool TryGetMemberInfo(ParameterExpression param, string propertyOrFieldName, out MemberInfo memberInfo)
+        {
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy;
+
+            var pi = param.Type.GetProperty(propertyOrFieldName, bindingFlags);
+            if (pi != null)
             {
-                case TokenType.Identifier:
-                    expression = Expression.PropertyOrField(param, token.Value);
-                    break;
-                case TokenType.Constant:
-                    {
-                        if (int.TryParse(token.Value, out int intValue))
-                            expression = Expression.Constant(intValue);
-                        else if (double.TryParse(token.Value, out double doubleValue))
-                            expression = Expression.Constant(doubleValue);
-                        else
-                            throw new Exception($"Cannot parse {token.Type}: {token.Value}");
-                    }
-                    break;
-                default:
-                    throw new Exception($"Invalid TokenType: {token.Type}");
+                memberInfo = pi;
+                return true;
             }
 
-            values.Push(expression);
+            var fi = param.Type.GetField(propertyOrFieldName, bindingFlags);
+            if (fi != null)
+            {
+                memberInfo = fi;
+                return true;
+            }
+
+            memberInfo = null;
+            return false;
         }
     }
 }

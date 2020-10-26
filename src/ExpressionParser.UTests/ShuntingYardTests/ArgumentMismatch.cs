@@ -70,7 +70,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void PostTestCases(ArgumentMismatchTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.PostArgumentMismatchException>(() => ShuntingYard.Process(tokens, (token) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ShuntingYard.PostArgumentMismatchException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
 
             Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorInfo.Input);
             Assert.AreEqual(testCase.ActualArguments, ex.Actual);
@@ -106,7 +106,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void PreTestCases(ArgumentMismatchTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.PreArgumentMismatchException>(() => ShuntingYard.Process(tokens, (token) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ShuntingYard.PreArgumentMismatchException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
 
             Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorInfo.Input);
             Assert.AreEqual(testCase.ActualArguments, ex.Actual);

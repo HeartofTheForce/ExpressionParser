@@ -44,7 +44,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(ExpressionReductionTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.ExpressionReductionException>(() => ShuntingYard.Process(tokens, (token) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ShuntingYard.ExpressionReductionException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
 
             Assert.AreEqual(testCase.ExpectedRemaining, ex.RemainingValues);
         }
