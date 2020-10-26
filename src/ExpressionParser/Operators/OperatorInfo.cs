@@ -11,7 +11,7 @@ namespace ExpressionParser.Operators
         public Associativity Associativity { get; }
         public int PreArgCount { get; }
         public int PostArgCount { get; }
-        public int ParameterCount => PreArgCount + PostArgCount;
+        public int ArgCount => PreArgCount + PostArgCount;
 
         protected OperatorInfo(string input, string output, int precedence, Associativity associativity, int preArgCount, int postArgCount)
         {
@@ -22,6 +22,10 @@ namespace ExpressionParser.Operators
             PreArgCount = preArgCount;
             PostArgCount = postArgCount;
         }
+
+        public bool IsInfix() => PreArgCount > 0 && PostArgCount > 0;
+        public bool IsPostfix() => PreArgCount > 0 && PostArgCount == 0;
+        public bool IsPrefix() => PreArgCount == 0 && PostArgCount > 0;
 
         public static bool IsLowerPrecedence(OperatorInfo current, OperatorInfo target)
         {
@@ -45,14 +49,9 @@ namespace ExpressionParser.Operators
         }
     }
 
-    public abstract class OperatorInfo<T> : OperatorInfo
+    public interface IReducible<T>
     {
-        protected OperatorInfo(string input, string output, int precedence, Associativity associativity, int preArgCount, int postArgCount)
-        : base(input, output, precedence, associativity, preArgCount, postArgCount)
-        {
-        }
-
-        public abstract T Reduce(T[] args);
+        T Reduce(T[] args);
     }
 
     public enum Associativity

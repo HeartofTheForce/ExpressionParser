@@ -2,32 +2,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExpressionParser.Operators;
-using static ExpressionParser.Operators.CompilerOperators;
+using static ExpressionParser.Compilers.CompilerOperators;
 
 namespace ExpressionParser.Parsers
 {
     public class ShuntingYard
     {
         private readonly IEnumerable<Token> _infix;
-        private readonly ProcessToken _processToken;
+        private readonly ProcessOperand _processOperand;
+        private readonly ProcessOperator _processOperator;
+
         private readonly Stack<Stack<OperatorInfo>> _operatorStack;
         private readonly Stack<int> _argStack;
         private bool _wantExpression;
 
-        private ShuntingYard(IEnumerable<Token> infix, ProcessToken processToken)
+        private ShuntingYard(IEnumerable<Token> infix, ProcessOperand processOperand, ProcessOperator processOperator)
         {
             _infix = infix;
-            _processToken = processToken;
+            _processOperand = processOperand;
+            _processOperator = processOperator;
 
             _operatorStack = new Stack<Stack<OperatorInfo>>();
             _argStack = new Stack<int>();
             PushStack();
         }
 
-        public delegate void ProcessToken(Token token);
-        public static void Process(IEnumerable<Token> infix, ProcessToken processToken)
+        public delegate void ProcessOperand(Token token);
+        public delegate void ProcessOperator(OperatorInfo operatorInfo);
+
+        public static void Process(IEnumerable<Token> infix, ProcessOperand processOperand, ProcessOperator processOperator)
         {
-            var shuntingYard = new ShuntingYard(infix, processToken);
+            var shuntingYard = new ShuntingYard(infix, processOperand, processOperator);
             shuntingYard.Process();
         }
 
@@ -53,11 +58,11 @@ namespace ExpressionParser.Parsers
                     break;
                 case TokenType.Operator:
                     {
-                        var operatorInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsPrefix(x));
+                        var operatorInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && x.IsPrefix());
                         if (operatorInfo == null)
                             throw new Exception($"Invalid Prefix Operator: {current.Value}");
 
-                        ProcessOperator(operatorInfo);
+                        PushOperator(operatorInfo);
                     }
                     break;
                 case TokenType.Identifier:
@@ -65,7 +70,7 @@ namespace ExpressionParser.Parsers
                     {
                         _wantExpression = false;
                         _argStack.Push(_argStack.Pop() + 1);
-                        _processToken(current);
+                        _processOperand(current);
                     }
                     break;
                 default: throw new ExpressionTermException(current.Type);
@@ -81,7 +86,7 @@ namespace ExpressionParser.Parsers
                         if (_operatorStack.Count == 1)
                             throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                        FlushStack(_processToken);
+                        FlushStack();
                     }
                     break;
                 case TokenType.Delimiter:
@@ -89,14 +94,14 @@ namespace ExpressionParser.Parsers
                         if (_operatorStack.Count == 1)
                             throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                        FlushStack(_processToken);
+                        FlushStack();
                         PushStack();
                     }
                     break;
                 case TokenType.Operator:
                     {
-                        var infixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsInfix(x));
-                        var postfixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && IsPostfix(x));
+                        var infixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && x.IsInfix());
+                        var postfixInfo = OperatorMap.SingleOrDefault(x => x.Input == current.Value && x.IsPostfix());
 
                         if (infixInfo != null && postfixInfo != null)
                             throw new Exception("Prefix and Postfix operators must be distinct");
@@ -112,7 +117,7 @@ namespace ExpressionParser.Parsers
                         else
                             throw new Exception($"Invalid Prefix or Postfix Operator: {current.Value}");
 
-                        ProcessOperator(operatorInfo);
+                        PushOperator(operatorInfo);
                     }
                     break;
                 case TokenType.EndOfString:
@@ -123,22 +128,21 @@ namespace ExpressionParser.Parsers
                         if (_operatorStack.Count == 0)
                             throw new MissingTokenException(TokenType.ParenthesisOpen);
 
-                        FlushStack(_processToken);
+                        FlushStack();
                     }
                     break;
                 default: throw new UnexpectedTokenException(current.Type);
             }
         }
 
-        private void ProcessOperator(OperatorInfo operatorInfo)
+        private void PushOperator(OperatorInfo operatorInfo)
         {
             if (_operatorStack.Count == 0)
                 throw new MissingTokenException(TokenType.ParenthesisOpen);
 
             while (_operatorStack.Peek().TryPeek(out var stackOperatorInfo) && OperatorInfo.IsLowerPrecedence(operatorInfo, stackOperatorInfo))
             {
-                var token = PopTokenize();
-                _processToken(token);
+                PopOperator();
             }
 
             int availableArgs = _argStack.Pop();
@@ -158,12 +162,11 @@ namespace ExpressionParser.Parsers
             _wantExpression = true;
         }
 
-        private void FlushStack(ProcessToken processToken)
+        private void FlushStack()
         {
             while (_operatorStack.Peek().Count > 0)
             {
-                var token = PopTokenize();
-                processToken(token);
+                PopOperator();
             }
 
             int argCount = _argStack.Pop();
@@ -176,7 +179,7 @@ namespace ExpressionParser.Parsers
             _operatorStack.Pop();
         }
 
-        private Token PopTokenize()
+        private void PopOperator()
         {
             var stackOperatorInfo = _operatorStack.Peek().Pop();
 
@@ -185,8 +188,7 @@ namespace ExpressionParser.Parsers
                 throw new PostArgumentMismatchException(stackOperatorInfo, argCount);
 
             _argStack.Push(_argStack.Pop() + 1);
-
-            return new Token(TokenType.Operator, stackOperatorInfo.Output);
+            _processOperator(stackOperatorInfo);
         }
 
         public class MissingTokenException : Exception

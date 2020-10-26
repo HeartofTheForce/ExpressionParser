@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using static ExpressionParser.Operators.CompilerOperators;
+using static ExpressionParser.Compilers.CompilerOperators;
 
 namespace ExpressionParser.Parsers
 {

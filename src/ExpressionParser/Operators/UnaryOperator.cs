@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace ExpressionParser.Operators
 {
-    public class UnaryOperator : OperatorInfo<Expression>
+    public class UnaryOperator : OperatorInfo, IReducible<Expression>
     {
         public Func<Expression, Expression> UnaryExpression { get; }
 
@@ -13,7 +13,7 @@ namespace ExpressionParser.Operators
             UnaryExpression = unaryExpression;
         }
 
-        override public Expression Reduce(Expression[] args)
+        public Expression Reduce(Expression[] args)
         {
             return UnaryExpression(args[0]);
         }

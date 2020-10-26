@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace ExpressionParser.Operators
 {
-    public class BinaryOperator : OperatorInfo<Expression>
+    public class BinaryOperator : OperatorInfo, IReducible<Expression>
     {
         public Func<Expression, Expression, Expression> BinaryExpression { get; set; }
 
@@ -13,7 +13,7 @@ namespace ExpressionParser.Operators
             BinaryExpression = binaryExpression;
         }
 
-        override public Expression Reduce(Expression[] args)
+        public Expression Reduce(Expression[] args)
         {
             var left = args[0];
             var right = args[1];

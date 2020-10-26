@@ -1,11 +1,12 @@
 using System;
 using System.Linq.Expressions;
+using ExpressionParser.Operators;
 
-namespace ExpressionParser.Operators
+namespace ExpressionParser.Compilers
 {
     public static class CompilerOperators
     {
-        public static readonly OperatorInfo<Expression>[] OperatorMap = new OperatorInfo<Expression>[]
+        public static readonly OperatorInfo[] OperatorMap = new OperatorInfo[]
         {
             new BinaryOperator("*", "*", 5, Expression.Multiply),
             new BinaryOperator("/", "/", 5, Expression.Divide),
@@ -24,10 +25,6 @@ namespace ExpressionParser.Operators
             new FunctionOperator("cos", "cos", 0, 1, typeof(Math), nameof(Math.Cos)),
             new FunctionOperator("tan", "tan", 0, 1, typeof(Math), nameof(Math.Tan)),
         };
-
-        public static bool IsInfix(OperatorInfo x) => x.PreArgCount > 0 && x.PostArgCount > 0;
-        public static bool IsPostfix(OperatorInfo x) => x.PreArgCount > 0 && x.PostArgCount == 0;
-        public static bool IsPrefix(OperatorInfo x) => x.PreArgCount == 0 && x.PostArgCount > 0;
     }
 }
 
