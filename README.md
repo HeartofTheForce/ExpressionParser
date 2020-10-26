@@ -1,5 +1,5 @@
 # ExpressionParser
-Infix String -> C# Expresion Tree Parser
+Infix String -> C# Expression Tree Parser
 
 # Functionality
 - Operator Precedence
