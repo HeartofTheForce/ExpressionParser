@@ -145,14 +145,24 @@ namespace ExpressionParser.Parsers
                 PopOperator();
             }
 
-            int availableArgs = _argStack.Pop();
-            if (availableArgs != operatorInfo.PreArgCount)
-                throw new PreArgumentMismatchException(operatorInfo, availableArgs);
-
-            _argStack.Push(availableArgs - operatorInfo.PreArgCount);
+            int preArgs = _argStack.Pop();
+            if (preArgs != operatorInfo.PreArgCount)
+                throw new PreArgumentMismatchException(operatorInfo, preArgs);
             _argStack.Push(0);
 
             _operatorStack.Peek().Push(operatorInfo);
+        }
+
+        private void PopOperator()
+        {
+            var stackOperatorInfo = _operatorStack.Peek().Pop();
+
+            int postArgs = _argStack.Pop();
+            if (postArgs != stackOperatorInfo.PostArgCount)
+                throw new PostArgumentMismatchException(stackOperatorInfo, postArgs);
+            _argStack.Push(1);
+
+            _processOperator(stackOperatorInfo);
         }
 
         private void PushStack()
@@ -177,18 +187,6 @@ namespace ExpressionParser.Parsers
                 _argStack.Push(_argStack.Pop() + argCount);
 
             _operatorStack.Pop();
-        }
-
-        private void PopOperator()
-        {
-            var stackOperatorInfo = _operatorStack.Peek().Pop();
-
-            int argCount = _argStack.Pop();
-            if (argCount != stackOperatorInfo.PostArgCount)
-                throw new PostArgumentMismatchException(stackOperatorInfo, argCount);
-
-            _argStack.Push(_argStack.Pop() + 1);
-            _processOperator(stackOperatorInfo);
         }
 
         public class MissingTokenException : Exception
