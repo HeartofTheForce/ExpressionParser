@@ -15,7 +15,7 @@ Infix String -> C# Expression Tree Parser
 # How it works
 - Uses `OperatorInfo` arrays to descibe Functions/Operators
 - Tokenization using Regular Expressions
-- Parsing using [Shunting-yard Algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm)
+- Parsing using a modified [Shunting-yard Algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm)
 - Compilation using [C# Expression Trees](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees/)
 
 # Getting Start

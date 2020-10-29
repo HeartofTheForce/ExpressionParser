@@ -27,14 +27,14 @@ namespace ExpressionParser.UTests.End2EndTests
             new End2EndTestCase<int>()
             {
                 Infix = "2.5 + 3.3",
-                ExpectedPostfix = "2.5 3.3 +",
+                ExpectedNodeString = "(+ 2.5 3.3)",
                 ExpectedFunction = (Context<int> ctx) => (int)(2.5 + 3.3),
             },
             //IntOnlyBitwise
             new End2EndTestCase<int>()
             {
                 Infix = "~(1 | 4)",
-                ExpectedPostfix = "1 4 | ~",
+                ExpectedNodeString = "(~ (| 1 4))",
                 ExpectedFunction = (Context<int> ctx) => ~(1 | 4),
             },
         };
@@ -42,12 +42,12 @@ namespace ExpressionParser.UTests.End2EndTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(End2EndTestCase<int> testCase)
         {
-            var infixTokens = Lexer.Process(testCase.Infix);
+            var tokens = Lexer.Process(testCase.Infix);
 
-            string postfixActual = PostfixCompiler.Compile(infixTokens);
-            Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
+            var node = AstParser.Parse(tokens);
+            Assert.AreEqual(testCase.ExpectedNodeString, node.ToString());
 
-            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(infixTokens);
+            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(node);
             Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
     }

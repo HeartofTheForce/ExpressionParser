@@ -1,7 +1,7 @@
 using ExpressionParser.Parsers;
 using NUnit.Framework;
 
-namespace ExpressionParser.UTests.ShuntingYardTests
+namespace ExpressionParser.UTests.AstParserTests
 {
     [TestFixture]
     public class ExpressionTerm
@@ -69,7 +69,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(ExpressionTermTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.ExpressionTermException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ExpressionTermException>(() => AstParser.Parse(tokens));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

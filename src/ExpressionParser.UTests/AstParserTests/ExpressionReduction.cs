@@ -1,7 +1,7 @@
 using ExpressionParser.Parsers;
 using NUnit.Framework;
 
-namespace ExpressionParser.UTests.ShuntingYardTests
+namespace ExpressionParser.UTests.AstParserTests
 {
     [TestFixture]
     public class ExpressionReduction
@@ -44,7 +44,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(ExpressionReductionTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.ExpressionReductionException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<ExpressionReductionException>(() => AstParser.Parse(tokens));
 
             Assert.AreEqual(testCase.ExpectedRemaining, ex.RemainingValues);
         }

@@ -1,12 +1,13 @@
+using ExpressionParser.Compilers;
 using ExpressionParser.Parsers;
 using NUnit.Framework;
 
-namespace ExpressionParser.UTests.ShuntingYardTests
+namespace ExpressionParser.UTests.CompilerTests
 {
     [TestFixture]
     public class ArgumentMismatch
     {
-        static readonly ArgumentMismatchTestCase[] s_postTestCases = new ArgumentMismatchTestCase[]
+        static readonly ArgumentMismatchTestCase[] s_testCases = new ArgumentMismatchTestCase[]
         {
             //TooMany
             new ArgumentMismatchTestCase()
@@ -64,32 +65,17 @@ namespace ExpressionParser.UTests.ShuntingYardTests
                 ExpectedOperator = "max",
                 ActualArguments = 1,
             },
-        };
-
-        [TestCaseSource(nameof(s_postTestCases))]
-        public void PostTestCases(ArgumentMismatchTestCase testCase)
-        {
-            var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.PostArgumentMismatchException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
-
-            Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorInfo.Input);
-            Assert.AreEqual(testCase.ActualArguments, ex.Actual);
-            Assert.AreNotEqual(ex.OperatorInfo.PostArgCount, ex.Actual);
-        }
-
-        static readonly ArgumentMismatchTestCase[] s_preTestCases = new ArgumentMismatchTestCase[]
-        {
             //TooManyInfix
             new ArgumentMismatchTestCase()
             {
                 Infix = "(1,2) + 1",
                 ExpectedOperator = "+",
-                ActualArguments = 2,
+                ActualArguments = 3,
             },
             //TooFewPostfix
             new ArgumentMismatchTestCase()
             {
-                Infix = "1 + (1,2)clamp)",
+                Infix = "1 + (1,2)clamp",
                 ExpectedOperator = "clamp",
                 ActualArguments = 2,
             },
@@ -102,15 +88,16 @@ namespace ExpressionParser.UTests.ShuntingYardTests
             },
         };
 
-        [TestCaseSource(nameof(s_preTestCases))]
-        public void PreTestCases(ArgumentMismatchTestCase testCase)
+        [TestCaseSource(nameof(s_testCases))]
+        public void TestCases(ArgumentMismatchTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.PreArgumentMismatchException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
+            var node = AstParser.Parse(tokens);
 
-            Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorInfo.Input);
-            Assert.AreEqual(testCase.ActualArguments, ex.Actual);
-            Assert.AreNotEqual(ex.OperatorInfo.PreArgCount, ex.Actual);
+            var ex = Assert.Throws<OverloadMismatchException>(() => ExpressionCompiler.Compile<double>(node));
+
+            Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorNode.OperatorInfo.Keyword);
+            Assert.AreEqual(testCase.ActualArguments, ex.OperatorNode.Children.Count);
         }
 
         public struct ArgumentMismatchTestCase

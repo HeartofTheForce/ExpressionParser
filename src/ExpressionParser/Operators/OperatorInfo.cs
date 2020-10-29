@@ -2,38 +2,39 @@ using System;
 
 namespace ExpressionParser.Operators
 {
-    public abstract class OperatorInfo
+    public class OperatorInfo
     {
-        public string Input { get; }
-
-        public string Output { get; }
+        public string Keyword { get; }
         public int Precedence { get; }
         public Associativity Associativity { get; }
-        public int PreArgCount { get; }
-        public int PostArgCount { get; }
-        public int ArgCount => PreArgCount + PostArgCount;
+        public bool HasLeftArguments { get; }
+        public bool HasRightArguments { get; }
 
-        protected OperatorInfo(string input, string output, int precedence, Associativity associativity, int preArgCount, int postArgCount)
+        public OperatorInfo(
+            string keyword,
+            int precedence,
+            Associativity associativity,
+            bool hasLeftArguments,
+            bool hasRightArguments)
         {
-            Input = input;
-            Output = output;
+            Keyword = keyword;
             Precedence = precedence;
             Associativity = associativity;
-            PreArgCount = preArgCount;
-            PostArgCount = postArgCount;
+            HasLeftArguments = hasLeftArguments;
+            HasRightArguments = hasRightArguments;
         }
 
-        public bool IsInfix() => PreArgCount > 0 && PostArgCount > 0;
-        public bool IsPostfix() => PreArgCount > 0 && PostArgCount == 0;
-        public bool IsPrefix() => PreArgCount == 0 && PostArgCount > 0;
+        public bool IsPrefix() => !HasLeftArguments && HasRightArguments;
+        public bool IsPostfix() => HasLeftArguments && !HasRightArguments;
+        public bool IsInfix() => HasLeftArguments && HasRightArguments;
 
-        public static bool IsLowerPrecedence(OperatorInfo current, OperatorInfo target)
+        public static bool IsEvaluatedBefore(OperatorInfo left, OperatorInfo right)
         {
-            if (current.Precedence == target.Precedence)
+            if (left.Precedence == right.Precedence)
             {
-                if (current.Associativity == target.Associativity)
+                if (left.Associativity == right.Associativity)
                 {
-                    switch (current.Associativity)
+                    switch (left.Associativity)
                     {
                         case Associativity.Left: return true;
                         case Associativity.Right: return false;
@@ -45,13 +46,8 @@ namespace ExpressionParser.Operators
                 }
             }
 
-            return current.Precedence < target.Precedence;
+            return left.Precedence < right.Precedence;
         }
-    }
-
-    public interface IReducible<T>
-    {
-        T Reduce(T[] args);
     }
 
     public enum Associativity

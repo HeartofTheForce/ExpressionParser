@@ -5,7 +5,7 @@ namespace ExpressionParser.UTests.End2EndTests
     public struct End2EndTestCase<T>
     {
         public string Infix { get; set; }
-        public string ExpectedPostfix { get; set; }
+        public string ExpectedNodeString { get; set; }
         public Func<Context<T>, T> ExpectedFunction { get; set; }
     }
 

@@ -1,7 +1,7 @@
 using ExpressionParser.Parsers;
 using NUnit.Framework;
 
-namespace ExpressionParser.UTests.ShuntingYardTests
+namespace ExpressionParser.UTests.AstParserTests
 {
     [TestFixture]
     public class MissingToken
@@ -32,7 +32,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(MissingTokenTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.MissingTokenException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<MissingTokenException>(() => AstParser.Parse(tokens));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

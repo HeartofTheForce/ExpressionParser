@@ -27,63 +27,63 @@ namespace ExpressionParser.UTests.End2EndTests
             new End2EndTestCase<int>()
             {
                 Infix = "(a + b) * c",
-                ExpectedPostfix = "a b + c *",
+                ExpectedNodeString = "(* (+ a b) c)",
                 ExpectedFunction = (Context<int> ctx) => (ctx.A + ctx.B) * ctx.C,
             },
             //LeftPrecedence
             new End2EndTestCase<int>()
             {
                 Infix = "a + b * c",
-                ExpectedPostfix = "a b c * +",
+                ExpectedNodeString = "(+ a (* b c))",
                 ExpectedFunction = (Context<int> ctx) => ctx.A + ctx.B * ctx.C,
             },
             //LeftAssociative
             new End2EndTestCase<int>()
             {
                 Infix = "a + b - c",
-                ExpectedPostfix = "a b + c -",
+                ExpectedNodeString = "(- (+ a b) c)",
                 ExpectedFunction = (Context<int> ctx) => ctx.A + ctx.B - ctx.C,
             },
             //Prefix
             new End2EndTestCase<int>()
             {
                 Infix = "-a + ~b",
-                ExpectedPostfix = "a u- b ~ +",
+                ExpectedNodeString = "(+ (- a) (~ b))",
                 ExpectedFunction = (Context<int> ctx) => -ctx.A + ~ctx.B,
             },
             //PrefixOutsideParentheses
             new End2EndTestCase<int>()
             {
                 Infix = "a + ~(b + c)",
-                ExpectedPostfix = "a b c + ~ +",
+                ExpectedNodeString = "(+ a (~ (+ b c)))",
                 ExpectedFunction = (Context<int> ctx) => ctx.A + ~(ctx.B + ctx.C),
             },
             //PrefixInsideParentheses
             new End2EndTestCase<int>()
             {
                 Infix = "(-b)",
-                ExpectedPostfix = "b u-",
+                ExpectedNodeString = "(- b)",
                 ExpectedFunction = (Context<int> ctx) => (-ctx.B),
             },
             //PrefixChained
             new End2EndTestCase<int>()
             {
                 Infix = "a + - ~ b",
-                ExpectedPostfix = "a b ~ u- +",
+                ExpectedNodeString = "(+ a (- (~ b)))",
                 ExpectedFunction = (Context<int> ctx) => ctx.A + -~ctx.B,
             },
             //Complex1
             new End2EndTestCase<int>()
             {
                 Infix = "a+b*(~c^d-e)^(f+g*h)-i",
-                ExpectedPostfix = "a b c ~ d e - ^ * + f g h * + i - ^",
+                ExpectedNodeString = "(^ (+ a (* b (^ (~ c) (- d e)))) (- (+ f (* g h)) i))",
                 ExpectedFunction = (Context<int> ctx) => ctx.A + ctx.B * (~ctx.C ^ ctx.D - ctx.E) ^ (ctx.F + ctx.G * ctx.H) - ctx.I,
             },
             //Complex2
             new End2EndTestCase<int>()
             {
                 Infix = "(-a ^ b | c) / (d | ~e ^ +f)",
-                ExpectedPostfix = "a u- b ^ c | d e ~ f u+ ^ | /",
+                ExpectedNodeString = "(/ (| (^ (- a) b) c) (| d (^ (~ e) (+ f))))",
                 ExpectedFunction = (Context<int> ctx) => (-ctx.A ^ ctx.B | ctx.C) / (ctx.D | ~ctx.E ^ +ctx.F),
             },
         };
@@ -91,12 +91,12 @@ namespace ExpressionParser.UTests.End2EndTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(End2EndTestCase<int> testCase)
         {
-            var infixTokens = Lexer.Process(testCase.Infix);
+            var tokens = Lexer.Process(testCase.Infix);
 
-            string postfixActual = PostfixCompiler.Compile(infixTokens);
-            Assert.AreEqual(testCase.ExpectedPostfix, postfixActual);
+            var node = AstParser.Parse(tokens);
+            Assert.AreEqual(testCase.ExpectedNodeString, node.ToString());
 
-            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(infixTokens);
+            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(node);
             Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
     }

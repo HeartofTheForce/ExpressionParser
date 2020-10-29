@@ -1,6 +1,6 @@
 using System;
 
-namespace ExpressionParser.Operators
+namespace ExpressionParser.Compilers
 {
     public static class TypeUtility
     {

@@ -6,22 +6,16 @@ namespace ExpressionParser.Cli
 {
     class Program
     {
-        struct Context
-        {
-            public static readonly Context Empty = new Context();
-        }
-
         static void Main(string[] args)
         {
             string infix = string.Join(' ', args);
             Console.WriteLine(infix);
 
-            var infixTokens = Lexer.Process(infix);
+            var tokens = Lexer.Process(infix);
+            var node = AstParser.Parse(tokens);
+            var func = ExpressionCompiler.Compile<double>(node);
 
-            var function = ExpressionCompiler.Compile<Context, double>(infixTokens);
-            double value = function(Context.Empty);
-
-            Console.WriteLine(value);
+            Console.WriteLine(func());
         }
     }
 }

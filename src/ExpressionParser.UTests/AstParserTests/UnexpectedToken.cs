@@ -1,7 +1,7 @@
 using ExpressionParser.Parsers;
 using NUnit.Framework;
 
-namespace ExpressionParser.UTests.ShuntingYardTests
+namespace ExpressionParser.UTests.AstParserTests
 {
     [TestFixture]
     public class UnexpectedToken
@@ -62,7 +62,7 @@ namespace ExpressionParser.UTests.ShuntingYardTests
         public void TestCases(UnexpectedTokenTestCase testCase)
         {
             var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ShuntingYard.UnexpectedTokenException>(() => ShuntingYard.Process(tokens, (value) => { }, (operatorInfo) => { }));
+            var ex = Assert.Throws<UnexpectedTokenException>(() => AstParser.Parse(tokens));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using static ExpressionParser.Compilers.CompilerOperators;
+using ExpressionParser.Operators;
 
 namespace ExpressionParser.Parsers
 {
@@ -72,12 +71,12 @@ namespace ExpressionParser.Parsers
             while (offset < input.Length)
             {
                 if (!TryMatch(input, ref offset, out var token))
-                    throw new Exception($"No matching Rules: {offset}");
+                    throw new Exception($"No matching rules '{offset}'");
 
                 if (token.Type == TokenType.NonSignificant)
                     continue;
 
-                if (token.Type == TokenType.Identifier && OperatorMap.Any(x => x.Input == token.Value))
+                if (token.Type == TokenType.Identifier && ParsingMap.Exists(token.Value))
                     token.Type = TokenType.Operator;
 
                 output.Add(token);
