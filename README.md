@@ -2,12 +2,12 @@
 Infix String -> C# Expression Tree Parser
 
 # Functionality
+- Prefix Operators
+- Postfix Operators
+- Infix Operators
 - Operator Precedence
 - Parentheses
-- Infix Operators
-- Postfix Operators
-- Prefix Operators
-- Fixed Parameter Functions
+- Argument Count Operator Overloading
 - Integral Constants
 - Floating-point Constants
 - Implicit Integral -> Floating-point Parameter Conversion
