@@ -8,9 +8,9 @@ namespace ExpressionParser.UTests.AstParserTests
     [TestFixture]
     public class Precedence
     {
-        private const int High = 0;
-        private const int Equal = 1;
-        private const int Low = 2;
+        private const uint High = 0;
+        private const uint Equal = 1;
+        private const uint Low = 2;
 
         private static readonly OperatorInfo[] s_testOperatorMap = new OperatorInfo[]
         {

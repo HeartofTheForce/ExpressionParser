@@ -5,13 +5,13 @@ namespace ExpressionParser.Operators
     public class OperatorInfo
     {
         public string Keyword { get; }
-        public int? LeftPrecedence { get; }
-        public int? RightPrecedence { get; }
+        public uint? LeftPrecedence { get; }
+        public uint? RightPrecedence { get; }
 
         private OperatorInfo(
             string keyword,
-            int? leftPrecedence,
-            int? rightPrecedence)
+            uint? leftPrecedence,
+            uint? rightPrecedence)
         {
             Keyword = keyword;
             LeftPrecedence = leftPrecedence;
@@ -28,7 +28,7 @@ namespace ExpressionParser.Operators
             return new OperatorInfo(keyword, 0, null);
         }
 
-        public static OperatorInfo Infix(string keyword, int leftPrecedence, int rightPrecedence)
+        public static OperatorInfo Infix(string keyword, uint leftPrecedence, uint rightPrecedence)
         {
             return new OperatorInfo(keyword, leftPrecedence + 1, rightPrecedence + 1);
         }
