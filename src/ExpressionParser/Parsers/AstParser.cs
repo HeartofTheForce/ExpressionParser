@@ -6,20 +6,21 @@ namespace ExpressionParser.Parsers
 {
     public class AstParser
     {
+        private readonly OperatorInfo[] _operatorMap;
         private readonly IEnumerable<Token> _tokens;
         private readonly Stack<ExpressionContext> _contextStack;
 
-        public AstParser(IEnumerable<Token> tokens)
+        public AstParser(OperatorInfo[] operatorMap, IEnumerable<Token> tokens)
         {
+            _operatorMap = operatorMap;
             _tokens = tokens;
-
             _contextStack = new Stack<ExpressionContext>();
             PushStack();
         }
 
-        public static Node Parse(IEnumerable<Token> tokens)
+        public static Node Parse(OperatorInfo[] operatorMap, IEnumerable<Token> tokens)
         {
-            var astParser = new AstParser(tokens);
+            var astParser = new AstParser(operatorMap, tokens);
             return astParser.Parse();
         }
 
@@ -43,8 +44,8 @@ namespace ExpressionParser.Parsers
             OperatorInfo operatorInfo;
             if (_contextStack.Peek().HaveOperand())
             {
-                var postfixInfo = ParsingMap.GetPostfix(current.Value);
-                var infixInfo = ParsingMap.GetInfix(current.Value);
+                var postfixInfo = _operatorMap.GetPostfix(current.Value);
+                var infixInfo = _operatorMap.GetInfix(current.Value);
 
                 if (postfixInfo != null && infixInfo != null)
                     throw new Exception("Ambigous Postfix and Infix operator");
@@ -58,7 +59,7 @@ namespace ExpressionParser.Parsers
             }
             else
             {
-                operatorInfo = ParsingMap.GetPrefix(current.Value);
+                operatorInfo = _operatorMap.GetPrefix(current.Value);
                 if (operatorInfo == null)
                     throw new Exception($"Invalid Prefix operator '{current.Value}'");
             }

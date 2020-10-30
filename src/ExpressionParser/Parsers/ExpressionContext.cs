@@ -11,7 +11,7 @@ namespace ExpressionParser.Parsers
 
         public bool HaveOperand()
         {
-            return _operands.Count > 0 || (_operators.Count > 0 && !_operators.Peek().OperatorInfo.HasRightArguments);
+            return _operands.Count > 0 || (_operators.Count > 0 && _operators.Peek().OperatorInfo.RightPrecedence == null);
         }
 
         public ExpressionContext()
@@ -33,7 +33,7 @@ namespace ExpressionParser.Parsers
             }
 
             bool hasLeftArguments = _operands.Count > 0;
-            if (hasLeftArguments != operatorInfo.HasLeftArguments)
+            if (hasLeftArguments != (operatorInfo.LeftPrecedence != null))
                 throw new Exception("Unexpected left arguments");
 
             var operatorNode = new OperatorNode(operatorInfo);
@@ -63,7 +63,7 @@ namespace ExpressionParser.Parsers
             var operatorNode = _operators.Pop();
 
             bool hasRightArguments = _operands.Count > 0;
-            if (hasRightArguments != operatorNode.OperatorInfo.HasRightArguments)
+            if (hasRightArguments != (operatorNode.OperatorInfo.RightPrecedence != null))
                 throw new Exception("Unexpected right arguments");
 
             while (_operands.Count > 0)

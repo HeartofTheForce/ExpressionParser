@@ -9,33 +9,13 @@ namespace ExpressionParser.Compilers
 {
     public static class ExpressionCompiler
     {
-        private static readonly CompilerFunction<Expression>[] s_compilerFunctions = new CompilerFunction<Expression>[]
-        {
-            new CompilerFunction<Expression>("+", 1, (args) => args[0]),
-            new CompilerFunction<Expression>("+", 2, (args) => ReduceBinary(Expression.Add, args)),
-            new CompilerFunction<Expression>("-", 1, (args) => ReduceUnary(Expression.Negate, args)),
-            new CompilerFunction<Expression>("-", 2, (args) => ReduceBinary(Expression.Subtract, args)),
-            new CompilerFunction<Expression>("~", 1, (args) => ReduceUnary(Expression.Not, args)),
-            new CompilerFunction<Expression>("*", 2, (args) => ReduceBinary(Expression.Multiply, args)),
-            new CompilerFunction<Expression>("/", 2, (args) => ReduceBinary(Expression.Divide, args)),
-            new CompilerFunction<Expression>("&", 2, (args) => ReduceBinary(Expression.And, args)),
-            new CompilerFunction<Expression>("^", 2, (args) => ReduceBinary(Expression.ExclusiveOr, args)),
-            new CompilerFunction<Expression>("|", 2, (args) => ReduceBinary(Expression.Or, args)),
-            new CompilerFunction<Expression>("max", 2, (args) => ReduceFunction(typeof(Math), nameof(Math.Max), args)),
-            new CompilerFunction<Expression>("min", 2, (args) => ReduceFunction(typeof(Math), nameof(Math.Min), args)),
-            new CompilerFunction<Expression>("sin", 1, (args) => ReduceFunction(typeof(Math), nameof(Math.Sin), args)),
-            new CompilerFunction<Expression>("cos", 1, (args) => ReduceFunction(typeof(Math), nameof(Math.Cos), args)),
-            new CompilerFunction<Expression>("tan", 1, (args) => ReduceFunction(typeof(Math), nameof(Math.Tan), args)),
-            new CompilerFunction<Expression>("clamp", 3, (args) => ReduceFunction(typeof(Math), nameof(Math.Clamp), args)),
-        };
-
-        public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(Node root)
+        public static Func<TParameter, TReturn> Compile<TParameter, TReturn>(CompilerFunction<Expression>[] compilerFunctions, Node root)
         {
             var param = Expression.Parameter(typeof(TParameter), "ctx");
             var variables = CreateVariables(param);
             Expression C(LeafNode leafNode) => CompileLeafNode(leafNode, variables);
 
-            var compilerScope = new CompilerScope<Expression>(C, s_compilerFunctions);
+            var compilerScope = new CompilerScope<Expression>(C, compilerFunctions);
 
             var expression = compilerScope.CompileNode(root);
             if (expression.Type != typeof(TReturn))
@@ -45,12 +25,12 @@ namespace ExpressionParser.Compilers
             return func;
         }
 
-        public static Func<TReturn> Compile<TReturn>(Node root)
+        public static Func<TReturn> Compile<TReturn>(CompilerFunction<Expression>[] compilerFunctions, Node root)
         {
             var variables = new Dictionary<string, Expression>();
             Expression C(LeafNode leafNode) => CompileLeafNode(leafNode, variables);
 
-            var compilerScope = new CompilerScope<Expression>(C, s_compilerFunctions);
+            var compilerScope = new CompilerScope<Expression>(C, compilerFunctions);
 
             var expression = compilerScope.CompileNode(root);
             if (expression.Type != typeof(TReturn))
@@ -90,53 +70,6 @@ namespace ExpressionParser.Compilers
             }
 
             return variables;
-        }
-
-
-        public static Expression ReduceBinary(
-            Func<Expression, Expression, Expression> binaryExpression,
-            Expression[] args)
-        {
-            if (args.Length != 2)
-                throw new Exception("Expected 2 arguments");
-
-            var left = args[0];
-            var right = args[1];
-
-            if (TypeUtility.IsFloat(left.Type) && TypeUtility.IsInteger(right.Type))
-                right = Expression.Convert(right, left.Type);
-            else if (TypeUtility.IsInteger(left.Type) && TypeUtility.IsFloat(right.Type))
-                left = Expression.Convert(left, right.Type);
-
-            return binaryExpression(left, right);
-        }
-
-        public static Expression ReduceUnary(
-            Func<Expression, Expression> unaryExpression,
-            Expression[] args)
-        {
-            if (args.Length != 1)
-                throw new Exception("Expected 1 argument");
-
-            return unaryExpression(args[0]);
-        }
-
-        public static Expression ReduceFunction(
-            Type sourceType,
-            string methodName,
-            Expression[] args)
-        {
-            MethodInfo methodInfo;
-            methodInfo = sourceType.GetMethod(methodName, args.Select(x => x.Type).ToArray());
-
-            var paramInfos = methodInfo.GetParameters();
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (TypeUtility.IsFloat(paramInfos[i].ParameterType) && TypeUtility.IsInteger(args[i].Type))
-                    args[i] = Expression.Convert(args[i], paramInfos[i].ParameterType);
-            }
-
-            return Expression.Call(null, methodInfo, args);
         }
     }
 }

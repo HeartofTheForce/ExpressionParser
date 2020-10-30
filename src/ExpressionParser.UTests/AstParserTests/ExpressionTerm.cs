@@ -68,8 +68,8 @@ namespace ExpressionParser.UTests.AstParserTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(ExpressionTermTestCase testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
-            var ex = Assert.Throws<ExpressionTermException>(() => AstParser.Parse(tokens));
+            var tokens = Lexer.Process(DemoUtility.OperatorMap, testCase.Infix);
+            var ex = Assert.Throws<ExpressionTermException>(() => AstParser.Parse(DemoUtility.OperatorMap, tokens));
 
             Assert.AreEqual(testCase.ExpectedType, ex.Type);
         }

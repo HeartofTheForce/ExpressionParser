@@ -63,7 +63,7 @@ namespace ExpressionParser.Parsers
             return false;
         }
 
-        public static IEnumerable<Token> Process(string input)
+        public static IEnumerable<Token> Process(OperatorInfo[] operatorMap, string input)
         {
             var output = new List<Token>();
 
@@ -76,7 +76,7 @@ namespace ExpressionParser.Parsers
                 if (token.Type == TokenType.NonSignificant)
                     continue;
 
-                if (token.Type == TokenType.Identifier && ParsingMap.Exists(token.Value))
+                if (token.Type == TokenType.Identifier && operatorMap.Exists(token.Value))
                     token.Type = TokenType.Operator;
 
                 output.Add(token);

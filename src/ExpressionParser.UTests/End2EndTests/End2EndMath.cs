@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace ExpressionParser.UTests.End2EndTests
 {
     [TestFixture]
-    public class Function
+    public class End2EndMath
     {
         static readonly Context<double> s_ctx = new Context<double>()
         {
@@ -106,12 +106,12 @@ namespace ExpressionParser.UTests.End2EndTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(End2EndTestCase<double> testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
+            var tokens = Lexer.Process(DemoUtility.OperatorMap, testCase.Infix);
 
-            var node = AstParser.Parse(tokens);
+            var node = AstParser.Parse(DemoUtility.OperatorMap, tokens);
             Assert.AreEqual(testCase.ExpectedNodeString, node.ToString());
 
-            var functionActual = ExpressionCompiler.Compile<Context<double>, double>(node);
+            var functionActual = ExpressionCompiler.Compile<Context<double>, double>(DemoUtility.CompilerFunctions, node);
             Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
     }

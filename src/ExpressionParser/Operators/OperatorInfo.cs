@@ -5,54 +5,44 @@ namespace ExpressionParser.Operators
     public class OperatorInfo
     {
         public string Keyword { get; }
-        public int Precedence { get; }
-        public Associativity Associativity { get; }
-        public bool HasLeftArguments { get; }
-        public bool HasRightArguments { get; }
+        public int? LeftPrecedence { get; }
+        public int? RightPrecedence { get; }
 
-        public OperatorInfo(
+        private OperatorInfo(
             string keyword,
-            int precedence,
-            Associativity associativity,
-            bool hasLeftArguments,
-            bool hasRightArguments)
+            int? leftPrecedence,
+            int? rightPrecedence)
         {
             Keyword = keyword;
-            Precedence = precedence;
-            Associativity = associativity;
-            HasLeftArguments = hasLeftArguments;
-            HasRightArguments = hasRightArguments;
+            LeftPrecedence = leftPrecedence;
+            RightPrecedence = rightPrecedence;
         }
 
-        public bool IsPrefix() => !HasLeftArguments && HasRightArguments;
-        public bool IsPostfix() => HasLeftArguments && !HasRightArguments;
-        public bool IsInfix() => HasLeftArguments && HasRightArguments;
+        public static OperatorInfo Prefix(string keyword)
+        {
+            return new OperatorInfo(keyword, null, 1);
+        }
+
+        public static OperatorInfo Postfix(string keyword)
+        {
+            return new OperatorInfo(keyword, 0, null);
+        }
+
+        public static OperatorInfo Infix(string keyword, int leftPrecedence, int rightPrecedence)
+        {
+            return new OperatorInfo(keyword, leftPrecedence + 1, rightPrecedence + 1);
+        }
+
+        public bool IsPrefix() => LeftPrecedence == null && RightPrecedence != null;
+        public bool IsPostfix() => LeftPrecedence != null && RightPrecedence == null;
+        public bool IsInfix() => LeftPrecedence != null && RightPrecedence != null;
 
         public static bool IsEvaluatedBefore(OperatorInfo left, OperatorInfo right)
         {
-            if (left.Precedence == right.Precedence)
-            {
-                if (left.Associativity == right.Associativity)
-                {
-                    switch (left.Associativity)
-                    {
-                        case Associativity.Left: return true;
-                        case Associativity.Right: return false;
-                    }
-                }
-                else
-                {
-                    throw new Exception("Operators with same Precedence must have same Associativity");
-                }
-            }
+            if (left.RightPrecedence == null || right.LeftPrecedence == null)
+                return left.RightPrecedence == null;
 
-            return left.Precedence < right.Precedence;
+            return left.RightPrecedence <= right.LeftPrecedence;
         }
-    }
-
-    public enum Associativity
-    {
-        Left,
-        Right
     }
 }

@@ -43,7 +43,7 @@ namespace ExpressionParser.UTests.LexerTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(LexerTestCase testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
+            var tokens = Lexer.Process(DemoUtility.OperatorMap, testCase.Infix);
 
             Assert.AreEqual(testCase.ExpectedTokens.Length, tokens.Count());
 

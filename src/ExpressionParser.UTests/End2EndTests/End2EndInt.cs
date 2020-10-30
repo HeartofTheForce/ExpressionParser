@@ -42,12 +42,12 @@ namespace ExpressionParser.UTests.End2EndTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(End2EndTestCase<int> testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
+            var tokens = Lexer.Process(DemoUtility.OperatorMap, testCase.Infix);
 
-            var node = AstParser.Parse(tokens);
+            var node = AstParser.Parse(DemoUtility.OperatorMap, tokens);
             Assert.AreEqual(testCase.ExpectedNodeString, node.ToString());
 
-            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(node);
+            var functionActual = ExpressionCompiler.Compile<Context<int>, int>(DemoUtility.CompilerFunctions, node);
             Assert.AreEqual(testCase.ExpectedFunction(s_ctx), functionActual(s_ctx));
         }
     }

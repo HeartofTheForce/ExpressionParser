@@ -91,10 +91,10 @@ namespace ExpressionParser.UTests.CompilerTests
         [TestCaseSource(nameof(s_testCases))]
         public void TestCases(ArgumentMismatchTestCase testCase)
         {
-            var tokens = Lexer.Process(testCase.Infix);
-            var node = AstParser.Parse(tokens);
+            var tokens = Lexer.Process(DemoUtility.OperatorMap, testCase.Infix);
+            var node = AstParser.Parse(DemoUtility.OperatorMap, tokens);
 
-            var ex = Assert.Throws<OverloadMismatchException>(() => ExpressionCompiler.Compile<double>(node));
+            var ex = Assert.Throws<OverloadMismatchException>(() => ExpressionCompiler.Compile<double>(DemoUtility.CompilerFunctions, node));
 
             Assert.AreEqual(testCase.ExpectedOperator, ex.OperatorNode.OperatorInfo.Keyword);
             Assert.AreEqual(testCase.ActualArguments, ex.OperatorNode.Children.Count);
